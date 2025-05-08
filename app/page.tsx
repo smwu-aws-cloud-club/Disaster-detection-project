@@ -105,7 +105,11 @@ export default function DisasterDetectionPage() {
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon">
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    onClick={() => router.push('/profile')}
+                  >
                     <User className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
