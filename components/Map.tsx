@@ -18,9 +18,11 @@ interface Location {
 
 interface MapProps {
   locations: Location[]
-  userLocation: [number, number]
   onSelectCamera: (location: Location) => void
 }
+
+// Default center for Seoul
+const DEFAULT_CENTER: [number, number] = [37.5665, 126.9780]
 
 // Fix Leaflet marker icon issue
 const markerIcon = L.icon({
@@ -42,12 +44,12 @@ const fireIcon = L.icon({
 })
 
 // Map controller component
-function MapController({ userLocation }: { userLocation: [number, number] }) {
+function MapController() {
   const map = useMap()
 
   useEffect(() => {
-    map.setView(userLocation, 13)
-  }, [map, userLocation])
+    map.setView(DEFAULT_CENTER, 13)
+  }, [map])
 
   return null
 }
@@ -98,9 +100,9 @@ function DisasterSimulator() {
   )
 }
 
-export default function Map({ locations, userLocation, onSelectCamera }: MapProps) {
+export default function Map({ locations, onSelectCamera }: MapProps) {
   return (
-    <MapContainer center={userLocation} zoom={13} style={{ height: "100%", width: "100%" }} zoomControl={false}>
+    <MapContainer center={DEFAULT_CENTER} zoom={13} style={{ height: "100%", width: "100%" }} zoomControl={false}>
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -126,7 +128,7 @@ export default function Map({ locations, userLocation, onSelectCamera }: MapProp
         </Marker>
       ))}
 
-      <MapController userLocation={userLocation} />
+      <MapController />
       <DisasterSimulator />
     </MapContainer>
   )

@@ -1,12 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Camera, AlertTriangle, User, LogOut } from "lucide-react"
+import { Camera, AlertTriangle, User, LogOut, BarChart2 } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import dynamic from "next/dynamic"
-import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/components/ui/use-toast"
 import {
@@ -33,18 +31,6 @@ const sampleLocations: Location[] = [
   { id: 5, name: "용산구", lat: 37.5326, lng: 126.9907, status: "normal" },
 ]
 
-// Location coordinates mapping
-const locationCoordinates: { [key: string]: [number, number] } = {
-  "강남구": [37.5172, 127.0473],
-  "송파구": [37.5145, 127.1066],
-  "서초구": [37.4837, 127.0324],
-  "마포구": [37.5637, 126.9086],
-  "용산구": [37.5326, 126.9907],
-  "중구": [37.5637, 126.9977],
-  "종로구": [37.5724, 126.9760],
-  "성동구": [37.5633, 127.0366],
-}
-
 // Fetch CCTV locations from backend
 async function fetchCCTVLocations(): Promise<Location[]> {
   try {
@@ -55,7 +41,6 @@ async function fetchCCTVLocations(): Promise<Location[]> {
     return await response.json()
   } catch (error) {
     console.error('Error fetching CCTV locations:', error)
-    // Fallback to sample data if API fails
     return sampleLocations
   }
 }
@@ -74,7 +59,6 @@ export default function DisasterDetectionPage() {
   const [selectedCamera, setSelectedCamera] = useState<Location | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [locations, setLocations] = useState<Location[]>([])
-  const [userLocation, setUserLocation] = useState<[number, number]>([37.5665, 126.9780])
   const router = useRouter()
   const { toast } = useToast()
 
@@ -82,26 +66,18 @@ export default function DisasterDetectionPage() {
     const userData = localStorage.getItem('userData')
     setIsLoggedIn(!!userData)
 
-    if (userData) {
-      const { location } = JSON.parse(userData)
-      if (location && locationCoordinates[location]) {
-        setUserLocation(locationCoordinates[location])
-      }
-    }
-
     // Fetch initial CCTV locations
     fetchCCTVLocations().then(setLocations)
 
     const handleDisaster = (e: CustomEvent<{ locations: Location[] }>) => {
       setLocations(e.detail.locations)
-      router.push('/disaster-simulation')
     }
 
     window.addEventListener("disasterDetected", handleDisaster as EventListener)
     return () => {
       window.removeEventListener("disasterDetected", handleDisaster as EventListener)
     }
-  }, [router])
+  }, [])
 
   const handleSignOut = () => {
     localStorage.removeItem('userData')
@@ -116,9 +92,17 @@ export default function DisasterDetectionPage() {
   return (
     <div className="min-h-screen w-full bg-gray-100 p-8">
       <div className="max-w-6xl mx-auto relative">
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden aspect-square relative">
-          <div className="absolute top-4 right-4 z-[1000] flex gap-2">
-            {isLoggedIn ? (
+        <div className="absolute top-4 right-4 z-[1000] flex gap-2">
+          {isLoggedIn ? (
+            <>
+              <Button
+                variant="outline"
+                className="flex items-center gap-2"
+                onClick={() => router.push('/disaster-simulation')}
+              >
+                <BarChart2 className="h-4 w-4" />
+                재난 현황
+              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="icon">
@@ -126,7 +110,7 @@ export default function DisasterDetectionPage() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => router.push("/profile")}>
+                  <DropdownMenuItem onClick={() => router.push('/profile')}>
                     프로필
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleSignOut}>
@@ -135,17 +119,21 @@ export default function DisasterDetectionPage() {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            ) : (
-              <Button asChild className="font-semibold">
-                <Link href="/signup">회원가입</Link>
-              </Button>
-            )}
-          </div>
+            </>
+          ) : (
+            <Button 
+              className="font-semibold"
+              onClick={() => router.push('/signup')}
+            >
+              회원가입
+            </Button>
+          )}
+        </div>
 
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden aspect-square relative">
           <div className="h-full w-full">
             <MapWithNoSSR
               locations={locations}
-              userLocation={userLocation}
               onSelectCamera={setSelectedCamera}
             />
           </div>
