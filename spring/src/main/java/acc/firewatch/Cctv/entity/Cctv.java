@@ -1,14 +1,13 @@
 package acc.firewatch.Cctv.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Getter @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Cctv {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,7 +17,11 @@ public class Cctv {
     private double latitude; // 위도
     private double longitude; // 경도
 
-    private String area1; // 시/도
-    private String area2; // 구/군
-    private String area3; // 동
+    @Column(length = 1000, nullable = false)
+    private String url;
+    private String type;
+    private String roadId;
+    private String resolution;
+    private String format;
+    private String createdAt;
 }
