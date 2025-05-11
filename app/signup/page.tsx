@@ -15,6 +15,8 @@ interface Location {
   value: string
   label: string
   hasCCTV: boolean
+  lat: number
+  lng: number
 }
 
 export default function SignUpPage() {
@@ -24,6 +26,8 @@ export default function SignUpPage() {
     username: "",
     phoneNumber: "",
     location: "",
+    lat: 0,
+    lng: 0
   })
   const [open, setOpen] = useState(false)
   const [phoneError, setPhoneError] = useState("")
@@ -42,20 +46,22 @@ export default function SignUpPage() {
         setLocations(data.map((loc: any) => ({
           value: loc.name,
           label: loc.name,
-          hasCCTV: true
+          hasCCTV: true,
+          lat: loc.lat,
+          lng: loc.lng
         })))
       } catch (error) {
         console.error('Error fetching locations:', error)
         // Fallback to sample data if API fails
         setLocations([
-          { value: "강남구", label: "강남구", hasCCTV: true },
-          { value: "송파구", label: "송파구", hasCCTV: true },
-          { value: "서초구", label: "서초구", hasCCTV: true },
-          { value: "마포구", label: "마포구", hasCCTV: true },
-          { value: "용산구", label: "용산구", hasCCTV: true },
-          { value: "중구", label: "중구", hasCCTV: true },
-          { value: "종로구", label: "종로구", hasCCTV: true },
-          { value: "성동구", label: "성동구", hasCCTV: true },
+          { value: "강남구", label: "강남구", hasCCTV: true, lat: 37.5172, lng: 127.0473 },
+          { value: "송파구", label: "송파구", hasCCTV: true, lat: 37.5145, lng: 127.1066 },
+          { value: "서초구", label: "서초구", hasCCTV: true, lat: 37.4837, lng: 127.0324 },
+          { value: "마포구", label: "마포구", hasCCTV: true, lat: 37.5637, lng: 126.9086 },
+          { value: "용산구", label: "용산구", hasCCTV: true, lat: 37.5326, lng: 126.9907 },
+          { value: "중구", label: "중구", hasCCTV: true, lat: 37.5640, lng: 126.9970 },
+          { value: "종로구", label: "종로구", hasCCTV: true, lat: 37.5724, lng: 126.9760 },
+          { value: "성동구", label: "성동구", hasCCTV: true, lat: 37.5633, lng: 127.0366 },
         ])
       }
     }
@@ -199,7 +205,13 @@ export default function SignUpPage() {
                         key={location.value}
                         value={location.value}
                         onSelect={(currentValue) => {
-                          setFormData({ ...formData, location: currentValue })
+                          const selectedLocation = locations.find(loc => loc.value === currentValue)
+                          setFormData({ 
+                            ...formData, 
+                            location: currentValue,
+                            lat: selectedLocation?.lat || 0,
+                            lng: selectedLocation?.lng || 0
+                          })
                           setOpen(false)
                         }}
                       >

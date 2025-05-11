@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet"
 import L from "leaflet"
 import { Button } from "@/components/ui/button"
@@ -19,6 +19,7 @@ interface Location {
 interface MapProps {
   locations: Location[]
   onSelectCamera: (location: Location) => void
+  center?: [number, number]
 }
 
 // Default center for Seoul
@@ -44,12 +45,16 @@ const fireIcon = L.icon({
 })
 
 // Map controller component
-function MapController() {
+function MapController({ center }: { center?: [number, number] }) {
   const map = useMap()
 
   useEffect(() => {
-    map.setView(DEFAULT_CENTER, 13)
-  }, [map])
+    if (center) {
+      map.setView(center, 13)
+    } else {
+      map.setView(DEFAULT_CENTER, 13)
+    }
+  }, [map, center])
 
   return null
 }
@@ -57,6 +62,7 @@ function MapController() {
 // Disaster simulator component
 function DisasterSimulator() {
   const map = useMap()
+  const [isDisasterMode, setIsDisasterMode] = useState(false)
 
   const simulateDisaster = () => {
     // Randomly select a location to mark as disaster
@@ -69,7 +75,7 @@ function DisasterSimulator() {
           name: "현재 위치",
           lat: latLng.lat,
           lng: latLng.lng,
-          status: "normal"
+          status: isDisasterMode ? "normal" : "disaster"
         })
       }
     })
@@ -81,28 +87,40 @@ function DisasterSimulator() {
       // Update the global state
       window.dispatchEvent(
         new CustomEvent("disasterDetected", {
-          detail: { locations: [{ ...disasterLocation, status: "disaster" }] },
+          detail: { locations: [{ ...disasterLocation, status: isDisasterMode ? "normal" : "disaster" }] },
         }),
       )
 
       // Pan to the disaster location
       map.flyTo([disasterLocation.lat, disasterLocation.lng], 13, { duration: 2 })
+      
+      // Toggle the disaster mode
+      setIsDisasterMode(!isDisasterMode)
     }
   }
 
   return (
-    <div className="absolute z-[1000] bottom-4 right-4">
-      <Button variant="destructive" onClick={simulateDisaster} className="flex items-center gap-2">
+    <div className="absolute z-[1000] top-4 left-4">
+      <Button 
+        variant={isDisasterMode ? "outline" : "destructive"} 
+        onClick={simulateDisaster} 
+        className="flex items-center gap-2"
+      >
         <AlertTriangle size={16} />
-        재난 시뮬레이션
+        {isDisasterMode ? "재난 해제" : "재난 시뮬레이션"}
       </Button>
     </div>
   )
 }
 
-export default function Map({ locations, onSelectCamera }: MapProps) {
+export default function Map({ locations, onSelectCamera, center }: MapProps) {
   return (
-    <MapContainer center={DEFAULT_CENTER} zoom={13} style={{ height: "100%", width: "100%" }} zoomControl={false}>
+    <MapContainer 
+      center={center || DEFAULT_CENTER} 
+      zoom={13} 
+      style={{ height: "100%", width: "100%" }} 
+      zoomControl={false}
+    >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -128,7 +146,7 @@ export default function Map({ locations, onSelectCamera }: MapProps) {
         </Marker>
       ))}
 
-      <MapController />
+      <MapController center={center} />
       <DisasterSimulator />
     </MapContainer>
   )

@@ -59,12 +59,19 @@ export default function DisasterDetectionPage() {
   const [selectedCamera, setSelectedCamera] = useState<Location | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [locations, setLocations] = useState<Location[]>([])
+  const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null)
   const router = useRouter()
   const { toast } = useToast()
 
   useEffect(() => {
     const userData = localStorage.getItem('userData')
-    setIsLoggedIn(!!userData)
+    if (userData) {
+      const data = JSON.parse(userData)
+      setIsLoggedIn(true)
+      if (data.lat && data.lng) {
+        setUserLocation({ lat: data.lat, lng: data.lng })
+      }
+    }
 
     // Fetch initial CCTV locations
     fetchCCTVLocations().then(setLocations)
@@ -108,16 +115,15 @@ export default function DisasterDetectionPage() {
                   <Button 
                     variant="outline" 
                     size="icon"
-                    onClick={() => router.push('/profile')}
                   >
                     <User className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => router.push('/profile')}>
+                  <DropdownMenuItem onSelect={() => router.push('/profile')}>
                     프로필
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleSignOut}>
+                  <DropdownMenuItem onSelect={handleSignOut}>
                     <LogOut className="mr-2 h-4 w-4" />
                     로그아웃
                   </DropdownMenuItem>
@@ -139,6 +145,7 @@ export default function DisasterDetectionPage() {
             <MapWithNoSSR
               locations={locations}
               onSelectCamera={setSelectedCamera}
+              center={userLocation ? [userLocation.lat, userLocation.lng] : undefined}
             />
           </div>
 
