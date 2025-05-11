@@ -1,4 +1,4 @@
-package acc.loadtest;
+package acc.firewatch;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
