@@ -110,25 +110,22 @@ export default function DisasterDetectionPage() {
                 <BarChart2 className="h-4 w-4" />
                 재난 현황
               </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    size="icon"
-                  >
-                    <User className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onSelect={() => router.push('/profile')}>
-                    프로필
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={handleSignOut}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    로그아웃
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Button 
+                variant="outline" 
+                className="flex items-center gap-2"
+                onClick={() => router.push('/profile')}
+              >
+                <User className="h-4 w-4" />
+                프로필
+              </Button>
+              <Button 
+                variant="outline" 
+                className="flex items-center gap-2"
+                onClick={handleSignOut}
+              >
+                <LogOut className="h-4 w-4" />
+                로그아웃
+              </Button>
             </>
           ) : (
             <Button 
