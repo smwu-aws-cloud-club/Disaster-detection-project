@@ -1,5 +1,9 @@
 HELP.md
 .gradle
+gradle
+data
+gradlew
+gradlew.bat
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
@@ -35,3 +39,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### secret key ###
+.env
