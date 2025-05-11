@@ -28,6 +28,9 @@ dependencies {
 	// springBoot
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 
+	// security
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+
 	// webClient
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
