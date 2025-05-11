@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FCM 토큰 테스트</title>
+  </head>
+  <body>
+    <h1>FCM 웹 테스트</h1>
+    <button id="getTokenBtn">FCM 토큰 발급</button>
+    <div id="tokenDisplay">FCM 토큰:</div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+      import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+      import {
+        getMessaging,
+        getToken,
+        onMessage,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
+
+      // Firebase 설정
+      const firebaseConfig = {
+        apiKey: "AIzaSyCnIqHUpsH9MN6cBvrXmUz37cInpSc6mKU",
+        authDomain: "disaster-detection-project.firebaseapp.com",
+        projectId: "disaster-detection-project",
+        storageBucket: "disaster-detection-project.firebasestorage.app",
+        messagingSenderId: "444335381733",
+        appId: "1:444335381733:web:1e7054695e62b0a541080c",
+        measurementId: "G-DTCW9W6F4R",
+      };
+
+      // Firebase 앱 초기화
+      const app = initializeApp(firebaseConfig);
+      const messaging = getMessaging(app);
+
+      // FCM 토큰 발급 버튼 클릭 시 처리
+      document.getElementById("getTokenBtn").addEventListener("click", async () => {
+        try {
+          const currentToken = await getToken(messaging, {
+            vapidKey: "BEA9zr0xPeBmZhSkOlsKQS-douJRScq4GjJLPoO2l6X4LmTnPnHhB146XI0GdWfxHKvwmRtyEoXLwKaNq-hxC3M",
+          });
+
+          if (currentToken) {
+            console.log("FCM 토큰:", currentToken);
+            document.getElementById("tokenDisplay").innerText = `FCM 토큰: ${currentToken}`;
+            alert("FCM 토큰이 콘솔에 출력되었습니다!");
+
+            // 여기서 서버로 토큰을 보내서 'all' 토픽에 구독 요청 필요
+            // 서버로 해당 토큰을 전송하는 예시 코드
+            fetch("http://localhost:3000/topic-all", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({token: currentToken, topic: "all"}),
+            })
+              .then((response) => {
+                if (response.ok) {
+                  alert("all 토픽에 성공적으로 구독되었습니다!");
+                } else {
+                  alert("토픽 구독에 실패했습니다.");
+                }
+              })
+              .catch((error) => {
+                console.error("서버 통신 오류:", error);
+              });
+          } else {
+            console.warn("FCM 토큰이 존재하지 않습니다.");
+          }
+        } catch (err) {
+          console.error("FCM 토큰 발급 오류:", err);
+        }
+      });
+
+      // 푸시 메시지 수신 처리
+      onMessage(messaging, (payload) => {
+        console.log("수신된 메시지:", payload);
+        // 푸시 메시지가 수신되면 브라우저에서 알림 표시
+        const {title, body} = payload.notification;
+        new Notification(title, {
+          body: body,
+          icon: payload.notification.icon || "icon.png",
+        });
+      });
+    </script>
+  </body>
+</html>
