@@ -65,7 +65,7 @@ function DisasterSimulator() {
   const [isDisasterMode, setIsDisasterMode] = useState(false)
 
   const simulateDisaster = () => {
-    // Randomly select a location to mark as disaster
+    // Get all current markers
     const locations: Location[] = []
     map.eachLayer((layer: L.Layer) => {
       if (layer instanceof L.Marker) {
@@ -84,10 +84,15 @@ function DisasterSimulator() {
       const disasterIndex = Math.floor(Math.random() * locations.length)
       const disasterLocation = locations[disasterIndex]
 
-      // Update the global state
+      // Update the global state with all locations
+      const updatedLocations = locations.map((loc, index) => ({
+        ...loc,
+        status: index === disasterIndex ? (isDisasterMode ? "normal" : "disaster") : "normal"
+      }))
+
       window.dispatchEvent(
         new CustomEvent("disasterDetected", {
-          detail: { locations: [{ ...disasterLocation, status: isDisasterMode ? "normal" : "disaster" }] },
+          detail: { locations: updatedLocations },
         }),
       )
 

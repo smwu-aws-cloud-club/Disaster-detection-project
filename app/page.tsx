@@ -66,10 +66,17 @@ export default function DisasterDetectionPage() {
   useEffect(() => {
     const userData = localStorage.getItem('userData')
     if (userData) {
-      const data = JSON.parse(userData)
-      setIsLoggedIn(true)
-      if (data.lat && data.lng) {
-        setUserLocation({ lat: data.lat, lng: data.lng })
+      try {
+        const data = JSON.parse(userData)
+        setIsLoggedIn(true)
+        if (data.lat && data.lng) {
+          setUserLocation({ 
+            lat: parseFloat(data.lat), 
+            lng: parseFloat(data.lng) 
+          })
+        }
+      } catch (error) {
+        console.error('Error parsing user data:', error)
       }
     }
 
