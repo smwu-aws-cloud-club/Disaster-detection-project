@@ -2,10 +2,7 @@ package acc.firewatch.member.controller;
 
 import acc.firewatch.config.response.dto.CustomResponse;
 import acc.firewatch.config.response.dto.SuccessStatus;
-import acc.firewatch.member.dto.LoginRequestDto;
-import acc.firewatch.member.dto.LoginResponseDto;
-import acc.firewatch.member.dto.MemberRequestDto;
-import acc.firewatch.member.dto.MemberResponseDto;
+import acc.firewatch.member.dto.*;
 import acc.firewatch.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -37,5 +34,13 @@ public class MemberController {
         String phoneNum = (String) auth.getPrincipal(); // Jwt에서 설정한 값
 
         return CustomResponse.success(memberService.getMyInfo(phoneNum), SuccessStatus.GET_MY_INFO_OK);
+    }
+
+    @PatchMapping("/members/me")
+    public CustomResponse<MemberResponseDto> updateMyInfo(@RequestBody MemberUpdateRequestDto requestDto) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String phoneNum = (String) auth.getPrincipal();
+        MemberResponseDto responseDto = memberService.updateMyInfo(phoneNum, requestDto);
+        return CustomResponse.success(responseDto, SuccessStatus.UPDATE_MY_INFO_OK);
     }
 }

@@ -3,10 +3,7 @@ package acc.firewatch.member.service;
 import acc.firewatch.config.exception.CustomException;
 import acc.firewatch.config.exception.ErrorCode;
 import acc.firewatch.config.jwt.JwtTokenProvider;
-import acc.firewatch.member.dto.LoginRequestDto;
-import acc.firewatch.member.dto.LoginResponseDto;
-import acc.firewatch.member.dto.MemberRequestDto;
-import acc.firewatch.member.dto.MemberResponseDto;
+import acc.firewatch.member.dto.*;
 import acc.firewatch.member.entity.Address;
 import acc.firewatch.member.entity.Member;
 import acc.firewatch.member.repository.MemberRepository;
@@ -90,6 +87,27 @@ public class MemberService {
                 .city(member.getAddress().getCity())
                 .district(member.getAddress().getDistrict())
                 .detail(member.getAddress().getDetail())
+                .build();
+    }
+
+    // 회원 정보 수정 -> 주소만 가능
+    public MemberResponseDto updateMyInfo(String phoneNum, MemberUpdateRequestDto dto) {
+        Member member = memberRepository.findByPhoneNum(phoneNum)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_MEMBER));
+
+        member.getAddress().setCity(dto.getCity());
+        member.getAddress().setDistrict(dto.getDistrict());
+        member.getAddress().setDetail(dto.getDetail());
+
+        Member saved = memberRepository.save(member);
+
+        return MemberResponseDto.builder()
+                .id(saved.getId())
+                .name(saved.getName())
+                .phoneNum(saved.getPhoneNum())
+                .city(saved.getAddress().getCity())
+                .district(saved.getAddress().getDistrict())
+                .detail(saved.getAddress().getDetail())
                 .build();
     }
 
