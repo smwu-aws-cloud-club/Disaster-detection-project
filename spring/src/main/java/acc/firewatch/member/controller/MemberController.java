@@ -43,4 +43,13 @@ public class MemberController {
         MemberResponseDto responseDto = memberService.updateMyInfo(phoneNum, requestDto);
         return CustomResponse.success(responseDto, SuccessStatus.UPDATE_MY_INFO_OK);
     }
+
+    @PatchMapping("/members/me/password")
+    public CustomResponse<?> changePassword(@RequestBody PasswordChangeRequestDto dto) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String phoneNum = (String) auth.getPrincipal();
+
+        memberService.changePassword(phoneNum, dto);
+        return CustomResponse.success(SuccessStatus.UPDATE_PASSWORD);
+    }
 }

@@ -15,6 +15,7 @@ public enum SuccessStatus {
     // member
     GET_MY_INFO_OK(200,"회원 정보 조회 성공"),
     UPDATE_MY_INFO_OK(200,"회원 정보 수정 성공"),
+    UPDATE_PASSWORD(200,"비밀번호가 성공적으로 변경되었습니다."),
     ;
 
     private final int code;

@@ -15,6 +15,7 @@ public enum ErrorCode {
 
     // member
     NOT_FOUND_MEMBER(404,"회원 정보를 찾을 수 없습니다."),
+    PASSWORD_MISMATCH(400,"현재 비밀번호가 일치하지 않습니다."),
 
     // jwt
     NOT_FOUND_JWT_SECRET(404, "Jwt Secret 키를 찾을 수 없습니다. .env 파일에 설정해주세요."),

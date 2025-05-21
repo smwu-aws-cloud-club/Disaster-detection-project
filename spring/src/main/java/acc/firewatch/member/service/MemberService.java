@@ -111,4 +111,21 @@ public class MemberService {
                 .build();
     }
 
+    // 비밀번호 변경
+    public void changePassword(String phoneNum, PasswordChangeRequestDto dto) {
+        Member member = memberRepository.findByPhoneNum(phoneNum)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_MEMBER));
+
+        if (!passwordEncoder.matches(dto.getCurrentPassword(), member.getPassword())) {
+            throw new CustomException(ErrorCode.PASSWORD_MISMATCH);
+        }
+
+        if (!dto.getNewPassword().equals(dto.getConfirmNewPassword())) {
+            throw new CustomException(ErrorCode.PASSWORD_CONFIRM_MISMATCH);
+        }
+
+        member.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+        memberRepository.save(member);
+    }
+
 }

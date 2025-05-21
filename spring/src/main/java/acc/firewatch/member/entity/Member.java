@@ -1,10 +1,7 @@
 package acc.firewatch.member.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
@@ -22,6 +19,7 @@ public class Member {
     @Column(nullable = false, unique = true, length = 20)
     private String phoneNum;
 
+    @Setter
     @Column(nullable = false)
     private String password;
 
@@ -30,5 +28,6 @@ public class Member {
 
     @Column(nullable = false)
     private boolean verified;
+
 }
 
