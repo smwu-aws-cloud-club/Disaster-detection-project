@@ -2,6 +2,9 @@ package acc.firewatch.member.service;
 
 import acc.firewatch.config.exception.CustomException;
 import acc.firewatch.config.exception.ErrorCode;
+import acc.firewatch.config.jwt.JwtTokenProvider;
+import acc.firewatch.member.dto.LoginRequestDto;
+import acc.firewatch.member.dto.LoginResponseDto;
 import acc.firewatch.member.dto.MemberRequestDto;
 import acc.firewatch.member.dto.MemberResponseDto;
 import acc.firewatch.member.entity.Address;
@@ -11,13 +14,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class MemberService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
 
+    // 회원가입
     public MemberResponseDto signUp(MemberRequestDto dto) {
 
         if (!dto.getPassword().equals(dto.getConfirmPassword())) {
@@ -52,4 +59,38 @@ public class MemberService {
                 .detail(saved.getAddress().getDetail())
                 .build();
     }
+
+    // 로그인
+    public LoginResponseDto login(LoginRequestDto dto) {
+        Optional<Member> optional = memberRepository.findByPhoneNum(dto.getPhoneNum());
+
+        if (optional.isEmpty() || !passwordEncoder.matches(dto.getPassword(), optional.get().getPassword())) {
+            throw new CustomException(ErrorCode.LOGIN_FAILED);
+        }
+
+        Member member = optional.get();
+        String token = jwtTokenProvider.generateToken(member.getPhoneNum(), member.getId());
+
+        return LoginResponseDto.builder()
+                .jwtToken(token)
+                .name(member.getName())
+                .memberId(member.getId())
+                .build();
+    }
+
+    // 회원 정보 조회
+    public MemberResponseDto getMyInfo(String phoneNum) {
+        Member member = memberRepository.findByPhoneNum(phoneNum)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_MEMBER));
+
+        return MemberResponseDto.builder()
+                .id(member.getId())
+                .name(member.getName())
+                .phoneNum(member.getPhoneNum())
+                .city(member.getAddress().getCity())
+                .district(member.getAddress().getDistrict())
+                .detail(member.getAddress().getDetail())
+                .build();
+    }
+
 }

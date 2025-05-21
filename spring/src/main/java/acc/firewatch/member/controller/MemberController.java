@@ -2,24 +2,40 @@ package acc.firewatch.member.controller;
 
 import acc.firewatch.config.response.dto.CustomResponse;
 import acc.firewatch.config.response.dto.SuccessStatus;
+import acc.firewatch.member.dto.LoginRequestDto;
+import acc.firewatch.member.dto.LoginResponseDto;
 import acc.firewatch.member.dto.MemberRequestDto;
 import acc.firewatch.member.dto.MemberResponseDto;
 import acc.firewatch.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class MemberController {
     private final MemberService memberService;
 
-    @PostMapping("/signup")
+    @PostMapping("/auth/signup")
     public CustomResponse<MemberResponseDto> signUp(@RequestBody MemberRequestDto requestDto) {
         MemberResponseDto responseDto = memberService.signUp(requestDto);
         return CustomResponse.success(responseDto, SuccessStatus.SIGNUP_MEMBER_OK);
+    }
+
+    @PostMapping("/auth/login")
+    public CustomResponse<LoginResponseDto> login(@RequestBody LoginRequestDto requestDto) {
+        LoginResponseDto responseDto = memberService.login(requestDto);
+        return CustomResponse.success(responseDto, SuccessStatus.LOGIN_MEMBER_OK);
+    }
+
+    @GetMapping("/members/me")
+    public CustomResponse<MemberResponseDto> getMyInfo() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String phoneNum = (String) auth.getPrincipal(); // Jwt에서 설정한 값
+
+        return CustomResponse.success(memberService.getMyInfo(phoneNum), SuccessStatus.GET_MY_INFO_OK);
     }
 }
