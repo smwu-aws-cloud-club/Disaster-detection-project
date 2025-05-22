@@ -66,10 +66,16 @@ public class MemberService {
         }
 
         Member member = optional.get();
-        String token = jwtTokenProvider.generateToken(member.getPhoneNum(), member.getId());
+        System.out.println(member);
+        String accessToken = jwtTokenProvider.generateToken(member.getPhoneNum(), member.getId());
+        String refreshToken = jwtTokenProvider.generateRefreshToken(member.getPhoneNum(), member.getId());
+
+        member.setRefreshToken(refreshToken);
+        memberRepository.save(member);
 
         return LoginResponseDto.builder()
-                .jwtToken(token)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .name(member.getName())
                 .memberId(member.getId())
                 .build();
@@ -78,7 +84,7 @@ public class MemberService {
     // 회원 정보 조회
     public MemberResponseDto getMyInfo(String phoneNum) {
         Member member = memberRepository.findByPhoneNum(phoneNum)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_MEMBER));
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
         return MemberResponseDto.builder()
                 .id(member.getId())
@@ -93,7 +99,7 @@ public class MemberService {
     // 회원 정보 수정 -> 주소만 가능
     public MemberResponseDto updateMyInfo(String phoneNum, MemberUpdateRequestDto dto) {
         Member member = memberRepository.findByPhoneNum(phoneNum)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_MEMBER));
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
         member.getAddress().setCity(dto.getCity());
         member.getAddress().setDistrict(dto.getDistrict());
@@ -114,7 +120,7 @@ public class MemberService {
     // 비밀번호 변경
     public void changePassword(String phoneNum, PasswordChangeRequestDto dto) {
         Member member = memberRepository.findByPhoneNum(phoneNum)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_MEMBER));
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
         if (!passwordEncoder.matches(dto.getCurrentPassword(), member.getPassword())) {
             throw new CustomException(ErrorCode.PASSWORD_MISMATCH);

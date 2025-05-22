@@ -29,5 +29,8 @@ public class Member {
     @Column(nullable = false)
     private boolean verified;
 
+    @Setter
+    private String refreshToken;
+
 }
 

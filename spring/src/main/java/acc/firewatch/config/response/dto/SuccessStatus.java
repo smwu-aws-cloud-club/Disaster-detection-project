@@ -11,6 +11,7 @@ public enum SuccessStatus {
     // auth
     SIGNUP_MEMBER_OK(200,"회원가입 성공"),
     LOGIN_MEMBER_OK(200,"로그인 성공"),
+    TOKEN_REISSUE_OK(200,"토큰 재발급 성공"),
 
     // member
     GET_MY_INFO_OK(200,"회원 정보 조회 성공"),

@@ -3,9 +3,9 @@ package acc.firewatch.member.controller;
 import acc.firewatch.config.response.dto.CustomResponse;
 import acc.firewatch.config.response.dto.SuccessStatus;
 import acc.firewatch.member.dto.*;
+import acc.firewatch.member.service.AuthService;
 import acc.firewatch.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class MemberController {
     private final MemberService memberService;
+    private final AuthService authService;
 
     @PostMapping("/auth/signup")
     public CustomResponse<MemberResponseDto> signUp(@RequestBody MemberRequestDto requestDto) {
@@ -26,6 +27,12 @@ public class MemberController {
     public CustomResponse<LoginResponseDto> login(@RequestBody LoginRequestDto requestDto) {
         LoginResponseDto responseDto = memberService.login(requestDto);
         return CustomResponse.success(responseDto, SuccessStatus.LOGIN_MEMBER_OK);
+    }
+
+    @PostMapping("/auth/reissue")
+    public CustomResponse<TokenResponse> reissue(@RequestBody TokenReissueRequest request) {
+        TokenResponse response = authService.reissueToken(request.getRefreshToken());
+        return CustomResponse.success(response, SuccessStatus.TOKEN_REISSUE_OK);
     }
 
     @GetMapping("/members/me")

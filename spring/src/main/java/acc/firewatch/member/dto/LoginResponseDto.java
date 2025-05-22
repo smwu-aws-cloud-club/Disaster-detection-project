@@ -10,5 +10,6 @@ import lombok.*;
 public class LoginResponseDto {
     private Long memberId;
     private String name;
-    private String jwtToken;
+    private String accessToken;
+    private String refreshToken;
 }
