@@ -69,7 +69,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // Authentication 객체 생성 후 등록
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
-                            phoneNum,         // socialId
+                            phoneNum,         // 전화번호
                             claims,           // memberId
                             authorities       // 권한
                     );

@@ -81,6 +81,15 @@ public class MemberService {
                 .build();
     }
 
+    // 로그아웃
+    public void logout(String phoneNum) {
+        Member member = memberRepository.findByPhoneNum(phoneNum)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        member.setRefreshToken(null); // 토큰 무효화
+        memberRepository.save(member);
+    }
+
     // 회원 정보 조회
     public MemberResponseDto getMyInfo(String phoneNum) {
         Member member = memberRepository.findByPhoneNum(phoneNum)
