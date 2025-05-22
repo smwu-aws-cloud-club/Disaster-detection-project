@@ -37,7 +37,7 @@ public class MemberController {
         return CustomResponse.success(response, SuccessStatus.TOKEN_REISSUE_OK);
     }
 
-    @PostMapping("/members/logout")
+    @PostMapping("/auth/logout")
     public CustomResponse<?> logout() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String phoneNum = (String) auth.getPrincipal();
