@@ -1,5 +1,7 @@
 package acc.firewatch.config.jwt;
 
+import acc.firewatch.config.exception.CustomException;
+import acc.firewatch.config.exception.ErrorCode;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -17,6 +19,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
+import static acc.firewatch.config.response.dto.CustomResponseUtils.writeErrorResponse;
+
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -24,15 +28,37 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return path.startsWith("/api/auth") || path.startsWith("/h2");
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        String token = resolveToken(request);
+        String bearerToken = request.getHeader("Authorization");
 
-        // 토큰 유효성 검사, claim 추출
-        if (token != null && jwtTokenProvider.validateToken(token)) {
+        // 토큰 유무 확인 및 형식 확인
+        if (bearerToken == null) {
+            writeErrorResponse(response, ErrorCode.NOT_FOUND_AUTHORIZATION_HEADER);
+            return;
+        }
+
+        if (!bearerToken.startsWith("Bearer ")) {
+            writeErrorResponse(response, ErrorCode.NULL_POINT_HEADER_REQUEST);
+            return;
+        }
+
+        String token = bearerToken.substring(7);
+
+
+        try{
+            // 토큰 유효성 검사, claim 추출
+            jwtTokenProvider.validateToken(token);
+
             Claims claims = jwtTokenProvider.parseClaims(token);
 
             // 사용자 인증 객체 생성
@@ -49,16 +75,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     );
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
+        } catch (CustomException e) {
+            writeErrorResponse(response, e.getErrorCode());
+            return;
         }
 
         filterChain.doFilter(request, response);
-    }
-
-    private String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-        return null;
     }
 }
