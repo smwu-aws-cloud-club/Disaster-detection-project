@@ -17,19 +17,12 @@ import {
 interface Location {
   id: number
   name: string
+  address: string
   lat: number
   lng: number
-  status: "normal" | "disaster"
+  detection: "normal" | "disaster"
+  cctvUrl: string
 }
-
-// Sample CCTV locations for fallback
-const sampleLocations: Location[] = [
-  { id: 1, name: "강남구", lat: 37.5172, lng: 127.0473, status: "normal" },
-  { id: 2, name: "송파구", lat: 37.5145, lng: 127.1066, status: "normal" },
-  { id: 3, name: "서초구", lat: 37.4837, lng: 127.0324, status: "normal" },
-  { id: 4, name: "마포구", lat: 37.5637, lng: 126.9086, status: "normal" },
-  { id: 5, name: "용산구", lat: 37.5326, lng: 126.9907, status: "normal" },
-]
 
 // Fetch CCTV locations from backend
 async function fetchCCTVLocations(): Promise<Location[]> {
@@ -38,10 +31,19 @@ async function fetchCCTVLocations(): Promise<Location[]> {
     if (!response.ok) {
       throw new Error('Failed to fetch CCTV locations')
     }
-    return await response.json()
+    const data = await response.json()
+    return data.map((item: any) => ({
+      id: item.id,
+      name: item.name,
+      address: item.address,
+      lat: parseFloat(item.lat),
+      lng: parseFloat(item.lng),
+      detection: item.detection === "disaster" ? "disaster" : "normal",
+      cctvUrl: item.cctvUrl
+    }))
   } catch (error) {
     console.error('Error fetching CCTV locations:', error)
-    return sampleLocations
+    return [] // Return empty array instead of sample data
   }
 }
 
@@ -62,6 +64,10 @@ export default function DisasterDetectionPage() {
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null)
   const router = useRouter()
   const { toast } = useToast()
+
+  const handleSelectCamera = (location: Location) => {
+    setSelectedCamera(location)
+  }
 
   useEffect(() => {
     const userData = localStorage.getItem('userData')
@@ -148,7 +154,7 @@ export default function DisasterDetectionPage() {
           <div className="h-full w-full">
             <MapWithNoSSR
               locations={locations}
-              onSelectCamera={setSelectedCamera}
+              onSelectCamera={handleSelectCamera}
               center={userLocation ? [userLocation.lat, userLocation.lng] : undefined}
             />
           </div>
@@ -159,8 +165,8 @@ export default function DisasterDetectionPage() {
                 <DialogTitle className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Camera className="h-5 w-5" />
-                    {selectedCamera?.name} CCTV 화면
-                    {selectedCamera?.status === "disaster" && (
+                    {selectedCamera?.name}
+                    {selectedCamera?.detection === "disaster" && (
                       <span className="bg-red-600 text-white text-xs px-2 py-1 rounded-full animate-pulse">
                         재난 발생
                       </span>
@@ -169,11 +175,11 @@ export default function DisasterDetectionPage() {
                 </DialogTitle>
               </DialogHeader>
               <div className="relative aspect-video bg-black rounded-md overflow-hidden">
-                {selectedCamera?.status === "disaster" ? (
+                {selectedCamera?.detection === "disaster" ? (
                   <div className="w-full h-full flex items-center justify-center bg-black">
                     <div className="relative w-full h-full">
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <img src="/disaster-feed.png" alt="재난 CCTV 화면" className="w-full h-full object-cover" />
+                        <img src={selectedCamera.cctvUrl} alt="재난 CCTV 화면" className="w-full h-full object-cover" />
                       </div>
                       <div className="absolute top-4 left-4 flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full bg-red-600 animate-pulse"></div>
@@ -190,7 +196,7 @@ export default function DisasterDetectionPage() {
                   <div className="w-full h-full flex items-center justify-center bg-black">
                     <div className="relative w-full h-full">
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <img src="/normal-feed.png" alt="정상 CCTV 화면" className="w-full h-full object-cover" />
+                        <img src={selectedCamera?.cctvUrl} alt="정상 CCTV 화면" className="w-full h-full object-cover" />
                       </div>
                       <div className="absolute top-4 left-4 flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>

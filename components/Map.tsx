@@ -11,9 +11,11 @@ import "leaflet/dist/leaflet.css"
 interface Location {
   id: number
   name: string
+  address: string
   lat: number
   lng: number
-  status: "normal" | "disaster"
+  detection: "normal" | "disaster"
+  cctvUrl: string
 }
 
 interface MapProps {
@@ -73,9 +75,11 @@ function DisasterSimulator() {
         locations.push({
           id: Math.random(),
           name: "현재 위치",
+          address: "",
           lat: latLng.lat,
           lng: latLng.lng,
-          status: isDisasterMode ? "normal" : "disaster"
+          detection: isDisasterMode ? "normal" : "disaster",
+          cctvUrl: ""
         })
       }
     })
@@ -87,7 +91,7 @@ function DisasterSimulator() {
       // Update the global state with all locations
       const updatedLocations = locations.map((loc, index) => ({
         ...loc,
-        status: index === disasterIndex ? (isDisasterMode ? "normal" : "disaster") : "normal"
+        detection: index === disasterIndex ? (isDisasterMode ? "normal" : "disaster") : "normal"
       }))
 
       window.dispatchEvent(
@@ -135,13 +139,13 @@ export default function Map({ locations, onSelectCamera, center }: MapProps) {
         <Marker
           key={location.id}
           position={[location.lat, location.lng]}
-          icon={location.status === "disaster" ? fireIcon : markerIcon}
+          icon={location.detection === "disaster" ? fireIcon : markerIcon}
         >
           <Popup>
             <div className="p-2">
               <h3 className="font-bold">{location.name}</h3>
-              <p className={cn("text-sm", location.status === "disaster" ? "text-red-600 font-bold" : "text-gray-600")}>
-                상태: {location.status === "disaster" ? "재난 감지됨!" : "정상"}
+              <p className={cn("text-sm", location.detection === "disaster" ? "text-red-600 font-bold" : "text-gray-600")}>
+                상태: {location.detection === "disaster" ? "재난 감지됨!" : "정상"}
               </p>
               <Button size="sm" className="mt-2 w-full" onClick={() => onSelectCamera(location)}>
                 CCTV 연결
