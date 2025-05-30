@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { DynamoDBClient, ScanCommand } from '@aws-sdk/client-dynamodb'
+import { DynamoDBClient, ScanCommand, AttributeValue } from '@aws-sdk/client-dynamodb'
 import { unmarshall } from '@aws-sdk/util-dynamodb'
 
 const client = new DynamoDBClient({
@@ -10,14 +10,14 @@ const client = new DynamoDBClient({
   }
 })
 
-interface DynamoDBItem {
-  id: { N: string }
-  name: { S: string }
-  address: { S: string }
-  lat: { N: string }
-  lng: { N: string }
-  detection: { S: string }
-  cctvUrl: { S: string }
+interface UnmarshalledItem {
+  id: number
+  name: string
+  address: string
+  lat: number
+  lng: number
+  detection: string
+  cctvUrl: string
 }
 
 export async function GET() {
@@ -29,8 +29,8 @@ export async function GET() {
     const { Items } = await client.send(command)
     
     // Transform DynamoDB items to the expected format
-    const locations = Items?.map((item: DynamoDBItem) => {
-      const unmarshalled = unmarshall(item)
+    const locations = Items?.map((item: Record<string, AttributeValue>) => {
+      const unmarshalled = unmarshall(item) as UnmarshalledItem
       return {
         id: unmarshalled.id,
         name: unmarshalled.name,
