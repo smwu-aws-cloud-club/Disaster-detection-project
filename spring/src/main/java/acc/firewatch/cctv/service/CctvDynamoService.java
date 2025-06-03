@@ -6,15 +6,20 @@ import acc.firewatch.cctv.entity.CctvItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.core.pagination.sync.SdkIterable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
+import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
+import software.amazon.awssdk.enhanced.dynamodb.model.Page;
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.StreamSupport;
 
 @Service
 @RequiredArgsConstructor
@@ -74,8 +79,17 @@ public class CctvDynamoService {
 
     // 파라미터 district(군/구)에 해당하는 전체 cctv 아이템 조회
     public List<CctvResponseDto.GetAllCctvResponseDto> getByDistrict(String district) {
-        return getTable().scan().items().stream()
-                .filter(item -> district.equals(item.getDistrict()))
+        QueryConditional query = QueryConditional.keyEqualTo(
+                Key.builder().partitionValue(district).build()
+        );
+
+        SdkIterable<Page<CctvItem>> results = getTable()
+                .index("DistrictIndex")
+                .query(query);
+
+        // 결과는 Page<CctvItem> 단위로 나누어져 있으므로 StreamSupport로 스트림으로 변환
+        return StreamSupport.stream(results.spliterator(), false)
+                .flatMap(page -> page.items().stream())
                 .map(item -> CctvResponseDto.GetAllCctvResponseDto.builder()
                         .id(item.getId())
                         .name(item.getName())
@@ -84,8 +98,7 @@ public class CctvDynamoService {
                         .district(item.getDistrict())
                         .town(item.getTown())
                         .status(item.isStatus())
-                        .build()
-                )
+                        .build())
                 .toList();
     }
 
