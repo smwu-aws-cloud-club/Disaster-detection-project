@@ -1,7 +1,7 @@
 package acc.firewatch.config.jwt;
 
-import acc.firewatch.config.exception.CustomException;
-import acc.firewatch.config.exception.ErrorCode;
+import acc.firewatch.common.exception.CustomException;
+import acc.firewatch.common.exception.ErrorCode;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
-import static acc.firewatch.config.response.dto.CustomResponseUtils.writeErrorResponse;
+import static acc.firewatch.common.response.dto.CustomResponseUtils.writeErrorResponse;
 
 @Component
 @RequiredArgsConstructor
@@ -30,7 +30,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        return (path.startsWith("/api/auth") && !path.equals("/api/auth/logout")) || path.startsWith("/h2");
+        return path.startsWith("/swagger") ||
+                path.startsWith("/v3/api-docs") ||
+                path.startsWith("/api") ||
+                path.startsWith("/h2") ||
+                path.startsWith("/webjars");
     }
 
     @Override
