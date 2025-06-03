@@ -58,7 +58,7 @@ public class TrafficCctvFetcher {
                     String city = address.getOrDefault("city", "");
                     String district = address.getOrDefault("district", "");
                     String town = address.getOrDefault("town", "");
-                    String name = city + " " + district;
+                    String name = city + " " + district + " " + town;
 
                     Cctv cctv = Cctv.builder()
                             .name(name)
@@ -68,6 +68,7 @@ public class TrafficCctvFetcher {
                             .city(city)
                             .district(district)
                             .town(town)
+                            .status(false) // 디폴트 설정
                             .build();
 
                     result.add(cctv);
