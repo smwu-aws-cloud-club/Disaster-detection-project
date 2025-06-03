@@ -42,3 +42,4 @@ out/
 
 ### secret key ###
 .env
+application-local.yml
