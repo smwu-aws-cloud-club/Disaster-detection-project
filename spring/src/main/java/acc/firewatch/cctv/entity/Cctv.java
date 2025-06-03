@@ -1,4 +1,4 @@
-package acc.firewatch.Cctv.entity;
+package acc.firewatch.cctv.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,15 +13,16 @@ public class Cctv {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
+    private String name; // city+district
     private double latitude; // 위도
     private double longitude; // 경도
 
     @Column(length = 1000, nullable = false)
-    private String url;
-    private String type;
-    private String roadId;
-    private String resolution;
-    private String format;
-    private String createdAt;
+    private String cctvUrl;
+
+    private String city;      // 시/도
+    private String district;  // 군/구
+    private String town; // 동/면/읍
+
+    private boolean status; // 재난 상태
 }
