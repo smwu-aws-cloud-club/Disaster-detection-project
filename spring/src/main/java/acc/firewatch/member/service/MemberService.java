@@ -1,7 +1,7 @@
 package acc.firewatch.member.service;
 
-import acc.firewatch.config.exception.CustomException;
-import acc.firewatch.config.exception.ErrorCode;
+import acc.firewatch.common.exception.CustomException;
+import acc.firewatch.common.exception.ErrorCode;
 import acc.firewatch.config.jwt.JwtTokenProvider;
 import acc.firewatch.member.dto.*;
 import acc.firewatch.member.entity.Address;

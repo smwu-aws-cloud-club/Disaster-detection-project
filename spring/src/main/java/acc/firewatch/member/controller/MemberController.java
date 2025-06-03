@@ -1,7 +1,7 @@
 package acc.firewatch.member.controller;
 
-import acc.firewatch.config.response.dto.CustomResponse;
-import acc.firewatch.config.response.dto.SuccessStatus;
+import acc.firewatch.common.response.dto.CustomResponse;
+import acc.firewatch.common.response.dto.SuccessStatus;
 import acc.firewatch.member.dto.*;
 import acc.firewatch.member.repository.MemberRepository;
 import acc.firewatch.member.service.AuthService;

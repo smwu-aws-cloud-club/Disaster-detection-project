@@ -1,7 +1,7 @@
-package acc.firewatch.Cctv.service;
+package acc.firewatch.cctv.service;
 
-import acc.firewatch.Cctv.Repository.CctvRepository;
-import acc.firewatch.Cctv.entity.Cctv;
+import acc.firewatch.cctv.Repository.CctvRepository;
+import acc.firewatch.cctv.entity.Cctv;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

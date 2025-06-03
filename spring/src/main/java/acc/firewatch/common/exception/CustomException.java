@@ -1,4 +1,4 @@
-package acc.firewatch.config.exception;
+package acc.firewatch.common.exception;
 
 import lombok.Getter;
 

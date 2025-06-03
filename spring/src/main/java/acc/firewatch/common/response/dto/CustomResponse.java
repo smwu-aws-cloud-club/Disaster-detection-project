@@ -1,6 +1,6 @@
-package acc.firewatch.config.response.dto;
+package acc.firewatch.common.response.dto;
 
-import acc.firewatch.config.exception.ErrorCode;
+import acc.firewatch.common.exception.ErrorCode;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
