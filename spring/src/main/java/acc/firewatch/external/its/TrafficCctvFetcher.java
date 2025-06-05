@@ -4,8 +4,8 @@ import acc.firewatch.cctv.entity.Cctv;
 import acc.firewatch.external.vworld.ReverseGeocodingService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.cdimascio.dotenv.Dotenv;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -23,8 +23,8 @@ public class TrafficCctvFetcher {
             .codecs(config -> config.defaultCodecs().maxInMemorySize(10 * 1024 * 1024))
             .build();
 
-    private final Dotenv dotenv = Dotenv.load();
-    private final String apiKey = dotenv.get("ITS_API_KEY");
+    @Value("${its.api.key")
+    private String apiKey;
 
     public List<Cctv> fetchAllCctvsWithAddress() throws Exception {
         List<Cctv> result = new ArrayList<>();

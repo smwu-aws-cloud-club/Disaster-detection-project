@@ -2,11 +2,11 @@ package acc.firewatch.config.jwt;
 
 import acc.firewatch.common.exception.CustomException;
 import acc.firewatch.common.exception.ErrorCode;
-import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
@@ -15,32 +15,31 @@ import java.util.Base64;
 import java.util.Date;
 
 @Configuration
-@ConfigurationProperties(prefix = "jwt")
 @Getter
 public class JwtTokenProvider {
 
+    @Value("${jwt.secret.key}")
     private String secret;
     private Key key;
-    private static final long ACCESS_TOKEN_EXPIRATION = 1000 * 60 * 60; // 60분
-    private static final long REFRESH_TOKEN_EXPIRATION = 1000 * 60 * 60 * 24 * 7; // 7일
+    @Value("${jwt.secret.expiration.access-token}")
+    private long accessExpiration;
+    @Value("${jwt.secret.expiration.refresh-token}")
+    private long refreshExpiration;
 
     @PostConstruct
     public void init() {
-        Dotenv dotenv = Dotenv.load();
-        this.secret = dotenv.get("JWT_SECRET_KEY");
         if(this.secret == null || secret.isEmpty()) {
             throw new CustomException(ErrorCode.NOT_FOUND_JWT_SECRET);
         }
-
         this.key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(secret));
     }
 
     public String generateToken(String phoneNum, Long memberId) {
-        return createToken(phoneNum, memberId, ACCESS_TOKEN_EXPIRATION);
+        return createToken(phoneNum, memberId, accessExpiration);
     }
 
     public String generateRefreshToken(String phoneNum, Long memberId) {
-        return createToken(phoneNum, memberId, REFRESH_TOKEN_EXPIRATION);
+        return createToken(phoneNum, memberId, refreshExpiration);
     }
 
     private String createToken(String phoneNum, Long memberId, long expiration) {

@@ -18,7 +18,7 @@ public enum ErrorCode {
     PASSWORD_MISMATCH(400,"현재 비밀번호가 일치하지 않습니다."),
 
     // jwt
-    NOT_FOUND_JWT_SECRET(404, "Jwt Secret 키를 찾을 수 없습니다. .env 파일에 설정해주세요."),
+    NOT_FOUND_JWT_SECRET(404, "Jwt Secret 키를 찾을 수 없습니다. yml 파일에 설정해주세요."),
     TOKEN_VALIDATE_FAILED(400,"Jwt Token이 유효하지 않습니다."),
     NOT_FOUND_AUTHORIZATION_HEADER(401, "Authorization 헤더가 없습니다."),
     NULL_POINT_HEADER_REQUEST(403,"헤더에 값이 없습니다."),

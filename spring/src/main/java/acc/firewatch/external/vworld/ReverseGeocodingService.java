@@ -1,8 +1,8 @@
 package acc.firewatch.external.vworld;
 
 import acc.firewatch.external.vworld.dto.VWorldAddressResponseDto;
-import io.github.cdimascio.dotenv.Dotenv;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -15,8 +15,8 @@ public class ReverseGeocodingService {
 
     private final WebClient webClient;
 
-    Dotenv dotenv = Dotenv.load();
-    private String apiKey = dotenv.get("VWORLD_API_KEY");
+    @Value("${vworld.api.key}")
+    private String apiKey;
 
     public Map<String, String> getAddressFields(double longitude, double latitude) {
         String url = String.format(

@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 public class MemberController {
     private final MemberService memberService;
     private final AuthService authService;
-    private final MemberRepository memberRepository;
 
     @PostMapping("/auth/signup")
     public CustomResponse<MemberResponseDto> signUp(@RequestBody MemberRequestDto requestDto) {
