@@ -77,4 +77,12 @@ public class CctvDynamoController {
         cctvDynamoService.deleteById(id);
         return CustomResponse.success(null, SuccessStatus.DYNAMO_CCTV_DELETE);
     }
+
+    // id에 해당하는 cctvUrl 조회
+    @GetMapping("/{id}/stream")
+    public CustomResponse<String> getCctvStreamUrl(@PathVariable String id) {
+        String streamUrl = cctvDynamoService.getStreamUrlById(id);
+        return CustomResponse.success(streamUrl, SuccessStatus.DYNAMO_CCTV_GET);
+    }
+
 }

@@ -3,6 +3,8 @@ package acc.firewatch.cctv.service;
 import acc.firewatch.cctv.dto.CctvRequestDto;
 import acc.firewatch.cctv.dto.CctvResponseDto;
 import acc.firewatch.cctv.entity.CctvItem;
+import acc.firewatch.common.exception.CustomException;
+import acc.firewatch.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -112,4 +114,14 @@ public class CctvDynamoService {
         getTable().deleteItem(r -> r.key(k -> k.partitionValue(id)));
         log.info("✅ 삭제 완료: id = {}", id);
     }
+
+    // id에 해당하는 cctvUrl 조회
+    public String getStreamUrlById(String id) {
+        CctvItem item = getById(id); // 기존 단건 조회 재사용
+        if (item == null || item.getCctvUrl() == null || item.getCctvUrl().isBlank()) {
+            throw new CustomException(ErrorCode.DYNAMO_CCTV_NOT_FOUND);
+        }
+        return item.getCctvUrl();
+    }
+
 }
