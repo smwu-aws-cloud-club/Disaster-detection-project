@@ -23,7 +23,8 @@ public enum SuccessStatus {
     CCTV_CSV_EXPORT(200,"전체 cctv csv 추출 성공"),
     DYNAMO_CCTV_SAVE(201,"cctvItem 저장 성공"),
     DYNAMO_CCTV_GET(200,"cctvItem 조회 성공"),
-    CSV2DYNAMO_SAVE(201,"csv -> dynamo 업로드 성공"),
+    DYNAMO_CCTVURL_GET(200,"cctvUrl 조회 성공"),
+    CSV2DYNAMO_SAVE(201,"CSV -> DynamoDB 업로드 성공"),
     DYNAMO_CCTV_DELETE(200, "cctvItem 삭제 성공"),
     ;
 

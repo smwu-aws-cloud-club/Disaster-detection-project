@@ -7,6 +7,11 @@ import acc.firewatch.common.exception.CustomException;
 import acc.firewatch.common.exception.ErrorCode;
 import acc.firewatch.common.response.dto.CustomResponse;
 import acc.firewatch.common.response.dto.SuccessStatus;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +25,19 @@ public class CctvExportController {
     private final TrafficCctvFetcher fetcher;
     private final CctvExportService exportService;
 
+    @Operation(summary = "CCTV 데이터 CSV 파일 추출 API", description = "외부 API로부터 CCTV 정보를 모으고 CSV 파일로 만듭니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "전체 cctv csv 추출 성공"),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "CCTV CSV 저장 중 오류 발생",
+                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+    {
+      "code": 500,
+      "message": "CCTV CSV 저장 중 오류 발생"
+    }"""))
+            )
+    })
     @PostMapping
     public CustomResponse<?> exportCctvToCsv() {
         try {
