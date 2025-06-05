@@ -28,29 +28,14 @@ public class CctvDynamoService {
     private final DynamoDbEnhancedClient enhancedClient;
     private static final String TABLE_NAME = "Cctv";
 
-    // 	ID로 단건 조회
     private DynamoDbTable<CctvItem> getTable() {
         return enhancedClient
                 .table(TABLE_NAME, TableSchema.fromBean(CctvItem.class));
     }
 
     // 단건 새로 저장 또는 덮어쓰기
-    public void save(CctvRequestDto.SaveCctvRequestDto requestDto) {
-        DynamoDbTable<CctvItem> table = enhancedClient.table("Cctv", TableSchema.fromBean(CctvItem.class));
-
-        CctvItem item = CctvItem.builder()
-                .id(requestDto.getId()) // DynamoDB는 RDBMS의 AUTO_INCREMENT 같은 기능을 제공하지 않기 때문에, id 값을 직접 생성하거나 관리헤야 함
-                .name(requestDto.getName())
-                .latitude(requestDto.getLatitude())
-                .longitude(requestDto.getLongitude())
-                .cctvUrl(requestDto.getCctvUrl())
-                .city(requestDto.getCity())
-                .district(requestDto.getDistrict())
-                .town(requestDto.getTown())
-                .status(false)
-                .build();
-
-        getTable().putItem(item);
+    public void save(CctvRequestDto requestDto) {
+        getTable().putItem(requestDto.toEntity());
     }
 
     // ID로 단건 조회
@@ -59,45 +44,23 @@ public class CctvDynamoService {
     }
 
     // 전체 CCTV 아이템 조회
-    public List<CctvResponseDto.GetAllCctvResponseDto> getAll() {
-        List<CctvResponseDto.GetAllCctvResponseDto> results = new ArrayList<>();
-        getTable().scan().items().forEach(cctv -> {
-            results.add(CctvResponseDto.GetAllCctvResponseDto.builder()
-                    .id(cctv.getId())
-                    .name(cctv.getName())
-                    .cctvUrl(cctv.getCctvUrl())
-                    .city(cctv.getCity())
-                    .district(cctv.getDistrict())
-                    .town(cctv.getTown())
-                    .status(cctv.isStatus())
-                    .build());
-        });
-
-        return results;
+    public List<CctvResponseDto> getAll() {
+        return StreamSupport.stream(getTable().scan().items().spliterator(), false)
+                .map(CctvResponseDto::fromEntity)
+                .toList();
     }
 
     // 파라미터 district(군/구)에 해당하는 전체 cctv 아이템 조회
-    public List<CctvResponseDto.GetAllCctvResponseDto> getByDistrict(String district) {
-        QueryConditional query = QueryConditional.keyEqualTo(
-                Key.builder().partitionValue(district).build()
-        );
+    public List<CctvResponseDto> getByDistrict(String district) {
+        QueryConditional query = QueryConditional.keyEqualTo(Key.builder().partitionValue(district).build());
 
         SdkIterable<Page<CctvItem>> results = getTable()
                 .index("DistrictIndex")
                 .query(query);
 
-        // 결과는 Page<CctvItem> 단위로 나누어져 있으므로 StreamSupport로 스트림으로 변환
         return StreamSupport.stream(results.spliterator(), false)
                 .flatMap(page -> page.items().stream())
-                .map(item -> CctvResponseDto.GetAllCctvResponseDto.builder()
-                        .id(item.getId())
-                        .name(item.getName())
-                        .cctvUrl(item.getCctvUrl())
-                        .city(item.getCity())
-                        .district(item.getDistrict())
-                        .town(item.getTown())
-                        .status(item.isStatus())
-                        .build())
+                .map(CctvResponseDto::fromEntity)
                 .toList();
     }
 
@@ -110,7 +73,6 @@ public class CctvDynamoService {
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split(",", -1);
                 if (parts.length < 9) continue;
-
 
                 CctvItem item = CctvItem.builder()
                         .id(parts[0])
@@ -147,11 +109,7 @@ public class CctvDynamoService {
 
     // id에 해당하는 레코드 삭제
     public void deleteById(String id) {
-        DynamoDbTable<CctvItem> table = enhancedClient
-                .table("Cctv", TableSchema.fromBean(CctvItem.class));
-
-        table.deleteItem(r -> r.key(k -> k.partitionValue(id)));
-
-        System.out.println("✅ 삭제 완료: id = " + id);
+        getTable().deleteItem(r -> r.key(k -> k.partitionValue(id)));
+        log.info("✅ 삭제 완료: id = {}", id);
     }
 }

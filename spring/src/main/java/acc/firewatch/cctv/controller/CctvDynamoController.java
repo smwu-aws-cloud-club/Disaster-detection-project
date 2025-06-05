@@ -9,7 +9,6 @@ import acc.firewatch.common.exception.ErrorCode;
 import acc.firewatch.common.response.dto.CustomResponse;
 import acc.firewatch.common.response.dto.SuccessStatus;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,7 +22,7 @@ public class CctvDynamoController {
 
     // 단건 새로 저장 또는 덮어쓰기
     @PostMapping
-    public CustomResponse<String> save(@RequestBody CctvRequestDto.SaveCctvRequestDto requestDto) {
+    public CustomResponse<String> save(@RequestBody CctvRequestDto requestDto) {
         cctvDynamoService.save(requestDto);
         return CustomResponse.success("cctvItem ID: " + requestDto.getId(), SuccessStatus.DYNAMO_CCTV_SAVE);
     }
@@ -39,7 +38,7 @@ public class CctvDynamoController {
     }
 
     @GetMapping
-    public CustomResponse<List<CctvResponseDto.GetAllCctvResponseDto>> getAll(
+    public CustomResponse<List<CctvResponseDto>> getAll(
             @RequestParam(required = false) String district) {
 
         // 검증 안함 → 있는 값이면 조회, 없으면 빈 리스트 반환
@@ -57,7 +56,7 @@ public class CctvDynamoController {
     }
 
     // cctv csv -> dynamo 일괄 업로드
-    @PostMapping("/import")
+    @PostMapping("/import-csv")
     public CustomResponse<?> uploadCsv(@RequestParam(defaultValue = "src/main/resources/cctv-merged.csv") String path) {
         if(cctvDynamoService.uploadCsvToDynamo(path)){
             return CustomResponse.success(SuccessStatus.CSV2DYNAMO_SAVE);

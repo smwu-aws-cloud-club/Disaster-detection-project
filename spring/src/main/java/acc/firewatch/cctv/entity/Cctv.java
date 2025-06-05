@@ -11,7 +11,7 @@ import lombok.*;
 public class Cctv {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     private String name;       // city+district+town
     private double latitude;   // 위도
