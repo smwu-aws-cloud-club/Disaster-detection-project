@@ -14,7 +14,7 @@ public enum ErrorCode {
     LOGIN_FAILED(400,"전화번호 또는 비밀번호가 일치하지 않습니다."),
 
     // member
-    MEMBER_NOT_FOUND(404,"회원 정보를 찾을 수 없습니다."),
+    MEMBER_NOT_FOUND(404,"멤버 정보를 찾을 수 없습니다."),
     PASSWORD_MISMATCH(400,"현재 비밀번호가 일치하지 않습니다."),
 
     // jwt
