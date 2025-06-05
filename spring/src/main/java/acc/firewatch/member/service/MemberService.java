@@ -66,7 +66,7 @@ public class MemberService {
         }
 
         Member member = optional.get();
-        System.out.println(member);
+
         String accessToken = jwtTokenProvider.generateToken(member.getPhoneNum(), member.getId());
         String refreshToken = jwtTokenProvider.generateRefreshToken(member.getPhoneNum(), member.getId());
 
