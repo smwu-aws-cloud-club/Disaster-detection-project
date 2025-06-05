@@ -9,10 +9,10 @@ import acc.firewatch.common.exception.ErrorCode;
 import acc.firewatch.common.response.dto.CustomResponse;
 import acc.firewatch.common.response.dto.SuccessStatus;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/api/dynamo/cctvs")
@@ -20,9 +20,6 @@ import java.util.Set;
 public class CctvDynamoController {
 
     private final CctvDynamoService cctvDynamoService;
-    private static final Set<String> ALLOWED_DISTRICTS = Set.of(
-            "강남구", "서초구", "송파구", "종로구", "용산구"
-    );
 
     // 단건 새로 저장 또는 덮어쓰기
     @PostMapping
@@ -45,20 +42,14 @@ public class CctvDynamoController {
     public CustomResponse<List<CctvResponseDto.GetAllCctvResponseDto>> getAll(
             @RequestParam(required = false) String district) {
 
-        // 파라미터 district(군/구)에 해당하는 전체 cctv 아이템 조회
+        // 검증 안함 → 있는 값이면 조회, 없으면 빈 리스트 반환
         if (district != null && !district.isBlank()) {
-
-            // district가 있으면 검증
-            if (!ALLOWED_DISTRICTS.contains(district)) {
-                throw new CustomException(ErrorCode.INVALID_DISTRICT);
-            }
             return CustomResponse.success(
                     cctvDynamoService.getByDistrict(district),
                     SuccessStatus.DYNAMO_CCTV_GET
             );
         }
 
-        // 모든 CCTV 목록 조회
         return CustomResponse.success(
                 cctvDynamoService.getAll(),
                 SuccessStatus.DYNAMO_CCTV_GET
@@ -66,11 +57,25 @@ public class CctvDynamoController {
     }
 
     // cctv csv -> dynamo 일괄 업로드
-    @PostMapping("/upload")
+    @PostMapping("/import")
     public CustomResponse<?> uploadCsv(@RequestParam(defaultValue = "src/main/resources/cctv-merged.csv") String path) {
         if(cctvDynamoService.uploadCsvToDynamo(path)){
             return CustomResponse.success(SuccessStatus.CSV2DYNAMO_SAVE);
         }
         throw new CustomException(ErrorCode.CSV2DYNAMO_SAVE_FAIL);
+    }
+
+    // DynamoDB에 저장된 district 값 조회
+    @GetMapping("/districts")
+    public CustomResponse<List<String>> getAllDistricts() {
+        List<String> districts = cctvDynamoService.getAllDistricts();
+        return CustomResponse.success(districts, SuccessStatus.DYNAMO_CCTV_GET);
+    }
+
+    // id에 해당하는 레코드 삭제
+    @DeleteMapping("/{id}")
+    public CustomResponse<Void> deleteCctv(@PathVariable String id) {
+        cctvDynamoService.deleteById(id);
+        return CustomResponse.success(null, SuccessStatus.DYNAMO_CCTV_DELETE);
     }
 }

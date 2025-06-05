@@ -18,7 +18,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -134,5 +133,25 @@ public class CctvDynamoService {
             log.error("❌ CSV → Dynamo 업로드 중 오류 발생: {}", e.getMessage(), e);
             return false;
         }
+    }
+
+    // 모든 district 값 조회
+    public List<String> getAllDistricts() {
+        return getTable().scan().items().stream()
+                .map(CctvItem::getDistrict)                     // district 필드만 추출
+                .filter(d -> d != null && !d.trim().isEmpty())  // null/빈 문자열 제외
+                .distinct()                                     // 중복 제거
+                .sorted()                                       // 알파벳 순 정렬
+                .toList();
+    }
+
+    // id에 해당하는 레코드 삭제
+    public void deleteById(String id) {
+        DynamoDbTable<CctvItem> table = enhancedClient
+                .table("Cctv", TableSchema.fromBean(CctvItem.class));
+
+        table.deleteItem(r -> r.key(k -> k.partitionValue(id)));
+
+        System.out.println("✅ 삭제 완료: id = " + id);
     }
 }
