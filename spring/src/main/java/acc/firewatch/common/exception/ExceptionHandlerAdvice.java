@@ -1,6 +1,6 @@
-package acc.firewatch.config.exception;
+package acc.firewatch.common.exception;
 
-import acc.firewatch.config.response.dto.CustomResponse;
+import acc.firewatch.common.response.dto.CustomResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

@@ -27,18 +27,23 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // CSRF 비활성화
+                .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/h2/**").permitAll()
+                        .requestMatchers(
+                                "/api/**",
+                                "/h2/**",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/webjars/**"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-//                .authorizeHttpRequests(auth -> auth
-//                        .anyRequest().permitAll() // 모든 요청 허용
-//                )
-                .headers(headers -> headers.frameOptions(frame -> frame.disable())); // H2 콘솔 접근 허용
+                .headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
         return http.build();
     }
+
 }

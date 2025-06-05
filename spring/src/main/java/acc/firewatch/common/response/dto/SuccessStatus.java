@@ -1,4 +1,4 @@
-package acc.firewatch.config.response.dto;
+package acc.firewatch.common.response.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,6 +18,14 @@ public enum SuccessStatus {
     GET_MY_INFO_OK(200,"회원 정보 조회 성공"),
     UPDATE_MY_INFO_OK(200,"회원 정보 수정 성공"),
     UPDATE_PASSWORD(200,"비밀번호가 성공적으로 변경되었습니다."),
+
+    // cctv
+    CCTV_CSV_EXPORT(200,"전체 cctv csv 추출 성공"),
+    DYNAMO_CCTV_SAVE(201,"cctvItem 저장 성공"),
+    DYNAMO_CCTV_GET(200,"cctvItem 조회 성공"),
+    DYNAMO_CCTVURL_GET(200,"cctvUrl 조회 성공"),
+    CSV2DYNAMO_SAVE(201,"CSV -> DynamoDB 업로드 성공"),
+    DYNAMO_CCTV_DELETE(200, "cctvItem 삭제 성공"),
     ;
 
     private final int code;

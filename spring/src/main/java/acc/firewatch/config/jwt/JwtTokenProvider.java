@@ -1,7 +1,7 @@
 package acc.firewatch.config.jwt;
 
-import acc.firewatch.config.exception.CustomException;
-import acc.firewatch.config.exception.ErrorCode;
+import acc.firewatch.common.exception.CustomException;
+import acc.firewatch.common.exception.ErrorCode;
 import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

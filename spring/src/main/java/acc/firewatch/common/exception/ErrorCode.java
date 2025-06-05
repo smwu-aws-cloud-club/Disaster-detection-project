@@ -1,4 +1,4 @@
-package acc.firewatch.config.exception;
+package acc.firewatch.common.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,6 +27,12 @@ public enum ErrorCode {
     INVALID_JWT_TOKEN(401,"유효하지 않은 JWT 토큰입니다."),
     INVALID_REFRESH_TOKEN(400,"유효하지 않은 refresh 토큰입니다."),
     REFRESH_TOKEN_MISMATCH(400,"멤버에 저장된 refresh 토큰과 일치하지 않습니다."),
+
+    // cctv
+    CCTV_CSV_SAVE_ERROR(500,"CCTV CSV 저장 중 오류 발생"),
+    DYNAMO_CCTV_NOT_FOUND(400, "DynamoDB에서 해당 cctvItem을 찾을 수 없습니다."),
+    CSV2DYNAMO_SAVE_FAIL( 500,"csv 업로드 중 서버에서 에러가 발생했습니다."),
+    INVALID_DISTRICT(400,"존재하지 않는 행정구역입니다."),
     ;
 
     private final int code;
