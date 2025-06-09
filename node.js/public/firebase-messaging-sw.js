@@ -13,6 +13,19 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+messaging.onBackgroundMessage(function (payload) {
+  console.log("[firebase-messaging-sw.js] Received background message ", payload);
+  // Customize notification here
+  const notificationTitle = payload.notification.title;
+  const notificationOptions = {
+    body: payload.notification.body,
+    icon: payload.notification.icon || "/firebase-logo.png", // 기본 아이콘 설정
+    data: payload.data, // 추가 데이터를 data 속성에 저장
+  };
+
+  self.registration.showNotification(notificationTitle, notificationOptions);
+});
+
 self.addEventListener("notificationclick", function (event) {
   console.log("[Service Worker] Notification click Received.");
 
