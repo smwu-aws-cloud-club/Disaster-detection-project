@@ -12,34 +12,71 @@ if (!admin.apps.length) {
 }
 
 export const handler = async (event) => {
-  // 1. FCM 발송
-  const region = event.region || "미지정";
-  const payload = {
-    topic: "all", // 프론트에서 token 등록 및 구독 요청 + 백에서 처리 필요
-    notification: {
-      title: "재난 발생",
-      body: `${region}에서 재난이 발생했습니다.`,
-    },
-    webpush: {
+  let parsedEvent;
+  try {
+    parsedEvent = typeof event.body === "string" ? JSON.parse(event.body) : event;
+  } catch (parseError) {
+    console.error("Failed to parse event body:", parseError);
+    return {
+      statusCode: 400,
+      body: JSON.stringify({message: "Invalid event body format"}),
+    };
+  }
+
+  const region = parsedEvent.region || "불명";
+  const status = parsedEvent.status || false; // boolean 값으로 가정
+
+  let fcmResultStatus;
+
+  // status가 true일 때만 FCM 알림 발송
+  if (status) {
+    const payload = {
+      topic: "all",
       notification: {
         title: "재난 발생",
         body: `${region}에서 재난이 발생했습니다.`,
-        // requireInteraction: true,
       },
-    },
-  };
+      webpush: {
+        notification: {
+          title: "재난 발생",
+          body: `${region}에서 재난이 발생했습니다.`,
+          // requireInteraction: true, // 필요시 주석 해제
+        },
+      },
+      data: {
+        link: "https://naver.com", // 실제 URL로 변경
+      },
+    };
 
-  try {
-    await admin.messaging().send(payload);
-    return {
-      statusCode: 200,
-      body: JSON.stringify({message: "FCM 전송 완료"}),
-    };
-  } catch (error) {
-    console.error("❌ 알림 전송 실패:", error.message);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({message: "알림 전송 실패", error: error.message}),
-    };
+    try {
+      await admin.messaging().send(payload);
+      console.log("✅ FCM 전송 완료");
+      fcmResultStatus = "성공";
+    } catch (error) {
+      console.error("❌ 알림 전송 실패:", error.message);
+      fcmResultStatus = "실패";
+    }
+  } else {
+    console.log("FCM 전송 조건(status가 true)이 충족되지 않아 알림을 보내지 않습니다.");
+    fcmResultStatus = "조건_미충족_알림_미발송"; // 알림 미발송 상태 추가
   }
+
+  const statusCode = fcmResultStatus === "성공" || fcmResultStatus === "조건_미충족_알림_미발송" ? 200 : 500;
+  const message =
+    fcmResultStatus === "성공"
+      ? "FCM 알림 전송 성공"
+      : fcmResultStatus === "조건_미충족_알림_미발송"
+      ? "FCM 전송 조건 미충족 (알림 미발송)"
+      : "FCM 알림 전송 실패";
+
+  return {
+    statusCode: statusCode,
+    body: JSON.stringify({
+      message: message,
+      fcmStatus: fcmResultStatus,
+      region: region,
+      status: status,
+      timestamp: Math.floor(new Date().getTime() / 1000),
+    }),
+  };
 };
