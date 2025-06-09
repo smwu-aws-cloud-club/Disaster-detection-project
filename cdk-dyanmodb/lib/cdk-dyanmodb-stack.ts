@@ -43,7 +43,17 @@ export class CdkDyanmodbStack extends cdk.Stack {
       },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
-    })
+    });
+
+    usersTable.addGlobalSecondaryIndex({
+      indexName: "region-index",
+      partitionKey: {
+        name: "region",
+        type: dynamodb.AttributeType.STRING,
+      },
+      projectionType: dynamodb.ProjectionType.INCLUDE,
+      nonKeyAttributes: ["phoneNumber"],
+    });
 
     const cctvsTable = new dynamodb.Table(this, "CCTVsTable", {
       tableName: "CCTVs",
