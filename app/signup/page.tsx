@@ -1,244 +1,191 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { LocationOption } from "../utils/locations"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useRouter } from "next/navigation"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useLocations } from "../hooks/useLocations"
 import { useToast } from "@/components/ui/use-toast"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Check, ChevronsUpDown } from "lucide-react"
-import { cn } from "@/lib/utils"
-
-interface Location {
-  value: string
-  label: string
-  hasCCTV: boolean
-  lat: number
-  lng: number
-}
 
 export default function SignUpPage() {
   const router = useRouter()
   const { toast } = useToast()
+  const { locations, loading, error } = useLocations()
   const [formData, setFormData] = useState({
-    username: "",
-    phoneNumber: "",
-    location: "",
-    lat: 0,
-    lng: 0
+    name: "",
+    phoneNum: "",
+    password: "",
+    confirmPassword: "",
+    city: "",
+    district: "",
+    detail: "",
   })
-  const [open, setOpen] = useState(false)
-  const [phoneError, setPhoneError] = useState("")
-  const [locations, setLocations] = useState<Location[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-
-  useEffect(() => {
-    // Fetch available CCTV locations from backend
-    const fetchLocations = async () => {
-      try {
-        const response = await fetch('/api/cctv-locations')
-        if (!response.ok) {
-          throw new Error('Failed to fetch locations')
-        }
-        const data = await response.json()
-        setLocations(data.map((loc: any) => ({
-          value: loc.name,
-          label: loc.name,
-          hasCCTV: true,
-          lat: loc.lat,
-          lng: loc.lng
-        })))
-      } catch (error) {
-        console.error('Error fetching locations:', error)
-        // Fallback to sample data if API fails
-        setLocations([
-          { value: "강남구", label: "강남구", hasCCTV: true, lat: 37.5172, lng: 127.0473 },
-          { value: "송파구", label: "송파구", hasCCTV: true, lat: 37.5145, lng: 127.1066 },
-          { value: "서초구", label: "서초구", hasCCTV: true, lat: 37.4837, lng: 127.0324 },
-          { value: "마포구", label: "마포구", hasCCTV: true, lat: 37.5637, lng: 126.9086 },
-          { value: "용산구", label: "용산구", hasCCTV: true, lat: 37.5326, lng: 126.9907 },
-          { value: "중구", label: "중구", hasCCTV: true, lat: 37.5640, lng: 126.9970 },
-          { value: "종로구", label: "종로구", hasCCTV: true, lat: 37.5724, lng: 126.9760 },
-          { value: "성동구", label: "성동구", hasCCTV: true, lat: 37.5633, lng: 127.0366 },
-        ])
-      }
-    }
-
-    fetchLocations()
-  }, [])
-
-  const validatePhoneNumber = (phone: string) => {
-    const phoneRegex = /^010-\d{4}-\d{4}$/
-    return phoneRegex.test(phone)
-  }
-
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    // Format phone number as user types
-    let formatted = value.replace(/[^0-9]/g, '')
-    if (formatted.length > 0) {
-      if (formatted.length <= 3) {
-        formatted = formatted
-      } else if (formatted.length <= 7) {
-        formatted = `${formatted.slice(0, 3)}-${formatted.slice(3)}`
-      } else {
-        formatted = `${formatted.slice(0, 3)}-${formatted.slice(3, 7)}-${formatted.slice(7, 11)}`
-      }
-    }
-    setFormData({ ...formData, phoneNumber: formatted })
-    
-    if (formatted.length > 0 && !validatePhoneNumber(formatted)) {
-      setPhoneError("010-XXXX-XXXX 형식으로 입력해주세요")
-    } else {
-      setPhoneError("")
-    }
-  }
+  const [selectedLocation, setSelectedLocation] = useState<LocationOption | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
     
-    if (!validatePhoneNumber(formData.phoneNumber)) {
+    if (formData.password !== formData.confirmPassword) {
       toast({
-        title: "전화번호 형식 오류",
-        description: "010-XXXX-XXXX 형식으로 입력해주세요",
+        title: "비밀번호 확인 오류",
+        description: "비밀번호가 일치하지 않습니다",
         variant: "destructive",
       })
-      setIsLoading(false)
-      return
-    }
-
-    if (!formData.location) {
-      toast({
-        title: "위치 선택 오류",
-        description: "위치를 선택해주세요",
-        variant: "destructive",
-      })
-      setIsLoading(false)
       return
     }
 
     try {
-      // Here you would typically send the data to your backend
-      // const response = await fetch('/api/signup', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData)
-      // })
-      
-      // Store user data in localStorage
-      localStorage.setItem('userData', JSON.stringify({
-        ...formData,
-        isLoggedIn: true
-      }))
+      const response = await fetch("/api/members", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          phoneNum: formData.phoneNum,
+          password: formData.password,
+          address: {
+            city: formData.city,
+            district: formData.district,
+            detail: formData.detail,
+          },
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to sign up")
+      }
 
       toast({
         title: "회원가입 완료",
-        description: "홈으로 이동합니다.",
+        description: "로그인 페이지로 이동합니다",
         duration: 3000,
       })
       
-      setTimeout(() => {
-        router.push("/")
-      }, 1000)
+      router.push("/login")
     } catch (error) {
+      console.error("Error signing up:", error)
       toast({
         title: "회원가입 실패",
         description: "다시 시도해주세요",
         variant: "destructive",
       })
-    } finally {
-      setIsLoading(false)
     }
   }
 
+  const handleLocationChange = (value: string) => {
+    const location = locations.find(loc => loc.value === value)
+    if (location) {
+      setSelectedLocation(location)
+      setFormData(prev => ({
+        ...prev,
+        city: location.value.split(" ")[0],
+        district: location.value.split(" ")[1] || "",
+      }))
+    }
+  }
+
+  if (loading) {
+    return <div>Loading...</div>
+  }
+
+  if (error) {
+    return <div>Error: {typeof error === 'string' ? error : 'An error occurred'}</div>
+  }
+
   return (
-    <div className="min-h-screen w-full bg-gray-100 flex items-center justify-center p-8">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
-        <h1 className="text-2xl font-bold text-center mb-6">재난 알림 서비스 회원가입</h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="username">이름</Label>
-            <Input
-              id="username"
-              type="text"
-              value={formData.username}
-              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-              required
-            />
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Create your account
+          </h2>
+        </div>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="rounded-md shadow-sm -space-y-px">
+            <div className="mb-4">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                type="text"
+                required
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+            </div>
+
+            <div className="mb-4">
+              <Label htmlFor="phoneNum">Phone Number</Label>
+              <Input
+                id="phoneNum"
+                type="tel"
+                required
+                value={formData.phoneNum}
+                onChange={(e) => setFormData({ ...formData, phoneNum: e.target.value })}
+              />
+            </div>
+
+            <div className="mb-4">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                required
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              />
+            </div>
+
+            <div className="mb-4">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                required
+                value={formData.confirmPassword}
+                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+              />
+            </div>
+
+            <div className="mb-4">
+              <Label htmlFor="location">Location</Label>
+              <Select onValueChange={handleLocationChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a location" />
+                </SelectTrigger>
+                <SelectContent>
+                  {locations.map((location) => (
+                    <SelectItem key={location.value} value={location.value}>
+                      {location.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="mb-4">
+              <Label htmlFor="detail">Detailed Address</Label>
+              <Input
+                id="detail"
+                type="text"
+                required
+                value={formData.detail}
+                onChange={(e) => setFormData({ ...formData, detail: e.target.value })}
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="phoneNumber">전화번호</Label>
-            <Input
-              id="phoneNumber"
-              type="tel"
-              value={formData.phoneNumber}
-              onChange={handlePhoneChange}
-              placeholder="010-0000-0000"
-              required
-            />
-            {phoneError && <p className="text-sm text-red-500">{phoneError}</p>}
+
+          <div>
+            <Button
+              type="submit"
+              className="w-full"
+            >
+              Sign up
+            </Button>
           </div>
-          <div className="space-y-2">
-            <Label>위치</Label>
-            <Popover open={open} onOpenChange={setOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={open}
-                  className="w-full justify-between"
-                >
-                  {formData.location || "위치를 선택하세요"}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
-                <Command>
-                  <CommandInput placeholder="위치 검색..." />
-                  <CommandEmpty>위치를 찾을 수 없습니다.</CommandEmpty>
-                  <CommandGroup>
-                    {locations.map((location) => (
-                      <CommandItem
-                        key={location.value}
-                        value={location.value}
-                        onSelect={(currentValue) => {
-                          const selectedLocation = locations.find(loc => loc.value === currentValue)
-                          setFormData({ 
-                            ...formData, 
-                            location: currentValue,
-                            lat: selectedLocation?.lat || 0,
-                            lng: selectedLocation?.lng || 0
-                          })
-                          setOpen(false)
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            formData.location === location.value ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        <span className="flex items-center gap-2">
-                          {location.label}
-                          {location.hasCCTV && (
-                            <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
-                              CCTV
-                            </span>
-                          )}
-                        </span>
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          </div>
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "처리중..." : "가입하기"}
-          </Button>
         </form>
       </div>
     </div>

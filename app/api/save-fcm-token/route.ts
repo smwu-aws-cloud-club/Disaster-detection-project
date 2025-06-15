@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb'
-import { marshall } from '@aws-sdk/util-dynamodb'
+import { DynamoDBClient, PutItemCommand, GetItemCommand } from '@aws-sdk/client-dynamodb'
+import { marshall, unmarshall } from '@aws-sdk/util-dynamodb'
 
 const client = new DynamoDBClient({
   region: process.env.AWS_REGION,
@@ -21,7 +21,28 @@ export async function POST(request: Request) {
       )
     }
 
-    const command = new PutItemCommand({
+    // Check if token already exists for this user
+    const getCommand = new GetItemCommand({
+      TableName: 'fcm_tokens',
+      Key: marshall({
+        userId
+      })
+    })
+
+    const { Item } = await client.send(getCommand)
+
+    if (Item) {
+      const existingToken = unmarshall(Item)
+      if (existingToken.token === token) {
+        return NextResponse.json({ 
+          success: true, 
+          message: 'Token already exists' 
+        })
+      }
+    }
+
+    // Save new token
+    const putCommand = new PutItemCommand({
       TableName: 'fcm_tokens',
       Item: marshall({
         userId,
@@ -30,9 +51,12 @@ export async function POST(request: Request) {
       })
     })
 
-    await client.send(command)
+    await client.send(putCommand)
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Token saved successfully' 
+    })
   } catch (error) {
     console.error('Error saving FCM token:', error)
     return NextResponse.json(
