@@ -24,7 +24,12 @@ export const handler = async (event) => {
   }
 
   const region = parsedEvent.region || "불명";
-  const status = parsedEvent.status || false; // boolean 값으로 가정
+  const status =
+    typeof parsedEvent.status === "boolean"
+      ? parsedEvent.status
+      : typeof parsedEvent.status === "string"
+      ? parsedEvent.status.toLowerCase() === "true"
+      : false;
 
   let fcmResultStatus;
 
