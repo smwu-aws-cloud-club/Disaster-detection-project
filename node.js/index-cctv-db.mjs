@@ -41,7 +41,7 @@ export const handler = async (event) => {
 
   // 새로 생성
   const timestamp = Math.floor(new Date().getTime() / 1000);
-  const tableName = process.env.DYNAMODB_TABLE_NAME_CCTV || "CctvItems"; // 환경 변수 사용 권장
+  const tableName = process.env.DYNAMODB_TABLE_NAME_CCTV || "CctvItem"; // 환경 변수 사용 권장
 
   const params = {
     TableName: tableName,

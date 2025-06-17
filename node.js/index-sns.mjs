@@ -8,8 +8,8 @@ const ddbDocClient = DynamoDBDocumentClient.from(dynamoClient);
 
 const getPhoneNumbersByRegionFromDynamoDB = async (targetRegion) => {
   let phoneNumbers = [];
-  const tableName = "Users"; // ⚠️ 실제 Users 테이블 이름으로 변경
-  const gsiName = "region-index"; // ⚠️ 위에서 생성할 GSI의 이름으로 변경
+  const tableName = "Member";
+  const gsiName = "address-index"; // ⚠️ 위에서 생성할 GSI의 이름으로 변경
 
   let ExclusiveStartKey = undefined;
 
@@ -17,21 +17,21 @@ const getPhoneNumbersByRegionFromDynamoDB = async (targetRegion) => {
     const command = new QueryCommand({
       TableName: tableName,
       IndexName: gsiName, // GSI를 지정하여 쿼리합니다.
-      KeyConditionExpression: "#regionName = :targetRegionValue", // GSI의 PK (region)에 대한 조건
+      KeyConditionExpression: "#addressName = :targetAddressValue", // GSI의 PK (address)에 대한 조건
       ExpressionAttributeNames: {
-        "#regionName": "region", // GSI의 Partition Key 필드명
+        "#addressName": "address", // GSI의 Partition Key 필드명 'address'
       },
       ExpressionAttributeValues: {
-        ":targetRegionValue": targetRegion, // 쿼리할 region 값
+        ":targetAddressValue": targetRegion, // 쿼리할 address 값
       },
-      ProjectionExpression: "phoneNumber", // 가져올 속성만 지정 (이 경우 phoneNumber)
+      ProjectionExpression: "phoneNum", // 가져올 속성만 지정 (phoneNum)
       ExclusiveStartKey,
     });
 
     const result = await ddbDocClient.send(command);
     result.Items?.forEach((item) => {
-      if (item.phoneNumber) {
-        phoneNumbers.push(item.phoneNumber);
+      if (item.phoneNum) {
+        phoneNumbers.push(item.phoneNum);
       }
     });
 
@@ -41,7 +41,19 @@ const getPhoneNumbersByRegionFromDynamoDB = async (targetRegion) => {
 };
 
 export const handler = async (event) => {
-  const region = event.region || "미지정";
+  let parsedEvent;
+  try {
+    parsedEvent = typeof event.body === "string" ? JSON.parse(event.body) : event;
+  } catch (parseError) {
+    console.error("Failed to parse event body:", parseError);
+    return {
+      statusCode: 400,
+      body: JSON.stringify({message: "Invalid event body format"}),
+    };
+  }
+
+  const region = parsedEvent.region || "불명";
+  const status = parsedEvent.status || false; // boolean 값으로 가정
   const message = `${region}에서 재난이 발생했습니다.`;
   let phoneNumbers;
   // phoneNumbers = ["+821051039694"];
@@ -79,7 +91,7 @@ export const handler = async (event) => {
         MessageAttributes: {
           "AWS.SNS.SMS.SMSType": {
             DataType: "String",
-            StringValue: "Transactional", // 'Promotional' 또는 'Transactional'
+            StringValue: "Transactional",
           },
         },
       });
