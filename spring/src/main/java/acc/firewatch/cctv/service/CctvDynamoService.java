@@ -15,6 +15,8 @@ import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.services.dynamodb.model.*;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -27,12 +29,62 @@ import java.util.stream.StreamSupport;
 @Slf4j
 public class CctvDynamoService {
 
+    private final DynamoDbClient dynamoDbClient;
     private final DynamoDbEnhancedClient enhancedClient;
     private static final String TABLE_NAME = "Cctv";
+    private static final String GSI_NAME = "district-index";
 
     private DynamoDbTable<CctvItem> getTable() {
         return enhancedClient
                 .table(TABLE_NAME, TableSchema.fromBean(CctvItem.class));
+    }
+
+    // Cctv 테이블 삭제
+    public void deleteTable() {
+        try {
+            DeleteTableRequest request = DeleteTableRequest.builder()
+                    .tableName(TABLE_NAME)
+                    .build();
+            dynamoDbClient.deleteTable(request);
+            System.out.println("✅ 테이블 삭제 완료");
+        } catch (ResourceNotFoundException e) {
+            System.out.println("⚠️ 테이블이 이미 존재하지 않음");
+        }
+    }
+
+    // Cctv 테이블 생성
+    public void createTable() {
+        CreateTableRequest request = CreateTableRequest.builder()
+                .tableName(TABLE_NAME)
+                .keySchema(KeySchemaElement.builder()
+                        .attributeName("id")
+                        .keyType(KeyType.HASH)
+                        .build())
+                .attributeDefinitions(
+                        AttributeDefinition.builder()
+                                .attributeName("id")
+                                .attributeType(ScalarAttributeType.S) // 기본 키(String)
+                                .build(),
+                        AttributeDefinition.builder()
+                                .attributeName("district")
+                                .attributeType(ScalarAttributeType.S) // GSI 키(String)
+                                .build()
+                )
+                .billingMode(BillingMode.PAY_PER_REQUEST) // 온디맨드 모드
+                .globalSecondaryIndexes(GlobalSecondaryIndex.builder()
+                        .indexName(GSI_NAME)
+                        .keySchema(KeySchemaElement.builder()
+                                .attributeName("district")
+                                .keyType(KeyType.HASH)
+                                .build())
+                        .projection(Projection.builder()
+                                .projectionType(ProjectionType.ALL)
+                                .build())
+                        .build())
+                .build();
+
+        dynamoDbClient.createTable(request);
+        System.out.println("✅ 테이블 생성 완료");
     }
 
     // 단건 새로 저장 또는 덮어쓰기

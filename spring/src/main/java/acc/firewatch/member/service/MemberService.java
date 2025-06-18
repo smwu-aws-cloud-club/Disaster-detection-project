@@ -20,6 +20,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final MemberDynamoService memberDynamoService;
 
     // 회원가입
     public MemberResponseDto signUp(MemberRequestDto dto) {
@@ -46,6 +47,16 @@ public class MemberService {
 
         Member saved = memberRepository.save(member);
 
+        String addressForDynamo = dto.getCity() + " " + dto.getDistrict();
+        MemberDynamoDto dynamoDto = MemberDynamoDto.builder()
+                .id(saved.getId())
+                .name(saved.getName())
+                .phoneNum(saved.getPhoneNum())
+                .address(addressForDynamo)
+                .refreshToken(null)
+                .build();
+        memberDynamoService.save(dynamoDto);
+
         return MemberResponseDto.builder()
                 .id(saved.getId())
                 .name(saved.getName())
@@ -55,6 +66,7 @@ public class MemberService {
                 .district(saved.getAddress().getDistrict())
                 .detail(saved.getAddress().getDetail())
                 .build();
+
     }
 
     // 로그인
@@ -70,8 +82,15 @@ public class MemberService {
         String accessToken = jwtTokenProvider.generateToken(member.getPhoneNum(), member.getId());
         String refreshToken = jwtTokenProvider.generateRefreshToken(member.getPhoneNum(), member.getId());
 
-        member.setRefreshToken(refreshToken);
-        memberRepository.save(member);
+        String address = member.getAddress().getCity() + " " + member.getAddress().getDistrict();
+        MemberDynamoDto dynamoDto = MemberDynamoDto.builder()
+                .id(member.getId())
+                .name(member.getName())
+                .phoneNum(member.getPhoneNum())
+                .address(address)
+                .refreshToken(refreshToken)  // 토큰 갱신
+                .build();
+        memberDynamoService.save(dynamoDto);
 
         return LoginResponseDto.builder()
                 .accessToken(accessToken)
@@ -86,8 +105,15 @@ public class MemberService {
         Member member = memberRepository.findByPhoneNum(phoneNum)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
-        member.setRefreshToken(null); // 토큰 무효화
-        memberRepository.save(member);
+        String address = member.getAddress().getCity() + " " + member.getAddress().getDistrict();
+        MemberDynamoDto dynamoDto = MemberDynamoDto.builder()
+                .id(member.getId())
+                .name(member.getName())
+                .phoneNum(member.getPhoneNum())
+                .address(address)
+                .refreshToken(null)  // 토큰 무효화
+                .build();
+        memberDynamoService.save(dynamoDto);
     }
 
     // 회원 정보 조회

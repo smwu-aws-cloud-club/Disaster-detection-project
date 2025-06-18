@@ -18,8 +18,13 @@ public enum SuccessStatus {
     GET_MY_INFO_OK(200,"멤버 정보 조회 성공"),
     UPDATE_MY_INFO_OK(200,"멤버 정보 수정 성공"),
     UPDATE_PASSWORD(200,"비밀번호가 성공적으로 변경되었습니다."),
+    DYNAMO_MEMBER_SAVE(201,"memberItem 저장 성공"),
+    DYNAMO_MEMBER_GET(200,"memberItem 조회 성공"),
+    DYNAMO_MEMBER_DELETE(200,"memberItem 삭제 성공"),
 
     // cctv
+    CREATE_DYNAMO_CCTV_TABLE(200,"DynamoDB cctv 테이블 생성 성공"),
+    DELETE_DYNAMO_CCTV_TABLE(200,"DynamoDB cctv 테이블 삭제 성공"),
     CCTV_CSV_EXPORT(200,"전체 cctv csv 추출 성공"),
     DYNAMO_CCTV_SAVE(201,"cctvItem 저장 성공"),
     DYNAMO_CCTV_GET(200,"cctvItem 조회 성공"),
