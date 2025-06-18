@@ -23,7 +23,7 @@ public class TrafficCctvFetcher {
             .codecs(config -> config.defaultCodecs().maxInMemorySize(10 * 1024 * 1024))
             .build();
 
-    @Value("${its.api.key")
+    @Value("${its.api.key}")
     private String apiKey;
 
     public List<Cctv> fetchAllCctvsWithAddress() throws Exception {
