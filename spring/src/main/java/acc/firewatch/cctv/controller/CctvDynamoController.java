@@ -27,6 +27,20 @@ public class CctvDynamoController {
 
     private final CctvDynamoService cctvDynamoService;
 
+    @Operation(summary = "dynamo Cctv 테이블 생성 API", description = "dynamo에 Cctv 테이블을 생성합니다.")
+    @PostMapping("/table")
+    public CustomResponse<Void> createTable() {
+        cctvDynamoService.createTable();
+        return CustomResponse.success(SuccessStatus.CREATE_DYNAMO_CCTV_TABLE);
+    }
+
+    @Operation(summary = "dynamo Cctv 테이블 삭제 API", description = "dynamo에 Cctv 테이블을 삭제합니다.")
+    @DeleteMapping("/table")
+    public CustomResponse<Void> deleteTable() {
+        cctvDynamoService.deleteTable();
+        return CustomResponse.success(null, SuccessStatus.DELETE_DYNAMO_CCTV_TABLE);
+    }
+
     @Operation(summary = "단건 새로 저장 또는 덮어쓰는 API", description = "dynamo에 한 건을 새로 저장하거나 덮어씁니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "cctvItem 저장 성공"),
