@@ -19,7 +19,7 @@ export const handler = async (event) => {
     };
   }
 
-  const id = Number(parsedEvent.id) || "불명";
+  const id = parsedEvent.id || "불명";
 
   if (id === "불명") {
     console.warn("Update request received with undefined or '불명' region.");
