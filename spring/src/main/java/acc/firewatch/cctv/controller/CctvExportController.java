@@ -49,6 +49,7 @@ public class CctvExportController {
 
             return CustomResponse.success("✅ CCTV 데이터를 CSV로 저장했습니다. (파일 경로: " + filePath + ")", SuccessStatus.CCTV_CSV_EXPORT);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new CustomException(ErrorCode.CCTV_CSV_SAVE_ERROR);
         }
     }

@@ -50,7 +50,6 @@ public class TrafficCctvFetcher {
 
                 for (JsonNode item : items) {
                     String cctvUrl = item.path("cctvurl").asText();
-                    String rawName = item.path("cctvname").asText().replace(",", " ");
                     double lat = item.path("coordy").asDouble();
                     double lng = item.path("coordx").asDouble();
 
@@ -58,7 +57,7 @@ public class TrafficCctvFetcher {
                     String city = address.getOrDefault("city", "");
                     String district = address.getOrDefault("district", "");
                     String town = address.getOrDefault("town", "");
-                    String name = city + " " + district + " " + town;
+                    String name = city + " " + district;
 
                     Cctv cctv = Cctv.builder()
                             .name(name)
