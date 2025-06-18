@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Location, getLocations } from '../utils/locations';
+import { LocationOption, getLocations } from '../utils/locations';
 
 export const useLocations = () => {
-  const [locations, setLocations] = useState<Location[]>([]);
+  const [locations, setLocations] = useState<LocationOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
