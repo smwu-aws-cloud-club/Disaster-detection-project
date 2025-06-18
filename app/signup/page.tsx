@@ -21,7 +21,6 @@ export default function SignUpPage() {
     confirmPassword: "",
     city: "",
     district: "",
-    detail: "",
   })
   const [selectedLocation, setSelectedLocation] = useState<LocationOption | null>(null)
 
@@ -50,7 +49,6 @@ export default function SignUpPage() {
           address: {
             city: formData.city,
             district: formData.district,
-            detail: formData.detail,
           },
         }),
       })
@@ -82,8 +80,8 @@ export default function SignUpPage() {
       setSelectedLocation(location)
       setFormData(prev => ({
         ...prev,
-        city: location.value.split(" ")[0],
-        district: location.value.split(" ")[1] || "",
+        city: location.city,
+        district: location.district,
       }))
     }
   }
@@ -107,7 +105,7 @@ export default function SignUpPage() {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div className="mb-4">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">이름</Label>
               <Input
                 id="name"
                 type="text"
@@ -118,7 +116,7 @@ export default function SignUpPage() {
             </div>
 
             <div className="mb-4">
-              <Label htmlFor="phoneNum">Phone Number</Label>
+              <Label htmlFor="phoneNum">전화번호</Label>
               <Input
                 id="phoneNum"
                 type="tel"
@@ -129,7 +127,7 @@ export default function SignUpPage() {
             </div>
 
             <div className="mb-4">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">비밀번호</Label>
               <Input
                 id="password"
                 type="password"
@@ -140,7 +138,7 @@ export default function SignUpPage() {
             </div>
 
             <div className="mb-4">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword">비밀번호 확인</Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -151,10 +149,10 @@ export default function SignUpPage() {
             </div>
 
             <div className="mb-4">
-              <Label htmlFor="location">Location</Label>
+              <Label htmlFor="location">지역 선택</Label>
               <Select onValueChange={handleLocationChange}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a location" />
+                  <SelectValue placeholder="도시와 구/군을 선택하세요" />
                 </SelectTrigger>
                 <SelectContent>
                   {locations.map((location) => (
@@ -164,17 +162,6 @@ export default function SignUpPage() {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-
-            <div className="mb-4">
-              <Label htmlFor="detail">Detailed Address</Label>
-              <Input
-                id="detail"
-                type="text"
-                required
-                value={formData.detail}
-                onChange={(e) => setFormData({ ...formData, detail: e.target.value })}
-              />
             </div>
           </div>
 

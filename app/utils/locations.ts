@@ -1,17 +1,16 @@
 import { getAccessToken } from './auth';
-import { Region } from '../types/database';
+import { CCTVItem } from '../types/database';
 
 export interface LocationOption {
   value: string;
   label: string;
-  hasCCTV: boolean;
-  lat: number;
-  lng: number;
+  city: string;
+  district: string;
 }
 
 export const getLocations = async (): Promise<LocationOption[]> => {
   try {
-    const response = await fetch('/api/regions', {
+    const response = await fetch('/api/cctvs', {
       headers: {
         'Authorization': `Bearer ${getAccessToken()}`,
       },
@@ -21,15 +20,24 @@ export const getLocations = async (): Promise<LocationOption[]> => {
       throw new Error('Failed to fetch locations');
     }
 
-    const regions: Region[] = await response.json();
+    const cctvItems: CCTVItem[] = await response.json();
     
-    return regions.map(region => ({
-      value: region.region,
-      label: region.region,
-      hasCCTV: region.status,
-      lat: 0, // These would need to be fetched from a separate mapping
-      lng: 0, // These would need to be fetched from a separate mapping
-    }));
+    // Create unique city-district combinations
+    const uniqueLocations = new Map<string, LocationOption>();
+    
+    cctvItems.forEach(item => {
+      const key = `${item.city} ${item.district}`;
+      if (!uniqueLocations.has(key)) {
+        uniqueLocations.set(key, {
+          value: key,
+          label: key,
+          city: item.city,
+          district: item.district
+        });
+      }
+    });
+    
+    return Array.from(uniqueLocations.values());
   } catch (error) {
     console.error('Error fetching locations:', error);
     throw error;
