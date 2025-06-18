@@ -27,7 +27,7 @@ fi
 
 # Upload to S3
 echo "📤 Uploading to S3..."
-aws s3 sync out/ s3://your-bucket-name --delete
+aws s3 sync out/ s3://ddd-acc-next-frontend --delete
 
 # Invalidate CloudFront cache
 echo "🔄 Invalidating CloudFront cache..."
