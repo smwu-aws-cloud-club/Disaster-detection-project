@@ -22,7 +22,12 @@ export default function SignUpPage() {
     city: "",
     district: "",
   })
-  const [selectedLocation, setSelectedLocation] = useState<LocationOption | null>(null)
+
+  // Get unique cities
+  const cities = locations.map(loc => loc.city)
+
+  // Get districts for selected city
+  const districts = locations.find(loc => loc.city === formData.city)?.districts || []
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -74,16 +79,19 @@ export default function SignUpPage() {
     }
   }
 
-  const handleLocationChange = (value: string) => {
-    const location = locations.find(loc => loc.value === value)
-    if (location) {
-      setSelectedLocation(location)
-      setFormData(prev => ({
-        ...prev,
-        city: location.city,
-        district: location.district,
-      }))
-    }
+  const handleCityChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      city: value,
+      district: "" // Reset district when city changes
+    }))
+  }
+
+  const handleDistrictChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      district: value
+    }))
   }
 
   if (loading) {
@@ -99,13 +107,13 @@ export default function SignUpPage() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your account
+            회원가입
           </h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div className="mb-4">
-              <Label htmlFor="name">이름</Label>
+          <div className="rounded-md shadow-sm space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-base">이름</Label>
               <Input
                 id="name"
                 type="text"
@@ -115,8 +123,8 @@ export default function SignUpPage() {
               />
             </div>
 
-            <div className="mb-4">
-              <Label htmlFor="phoneNum">전화번호</Label>
+            <div className="space-y-2">
+              <Label htmlFor="phoneNum" className="text-base">전화번호</Label>
               <Input
                 id="phoneNum"
                 type="tel"
@@ -126,8 +134,8 @@ export default function SignUpPage() {
               />
             </div>
 
-            <div className="mb-4">
-              <Label htmlFor="password">비밀번호</Label>
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-base">비밀번호</Label>
               <Input
                 id="password"
                 type="password"
@@ -137,8 +145,8 @@ export default function SignUpPage() {
               />
             </div>
 
-            <div className="mb-4">
-              <Label htmlFor="confirmPassword">비밀번호 확인</Label>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword" className="text-base">비밀번호 확인</Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -148,16 +156,36 @@ export default function SignUpPage() {
               />
             </div>
 
-            <div className="mb-4">
-              <Label htmlFor="location">지역 선택</Label>
-              <Select onValueChange={handleLocationChange}>
+            <div className="space-y-2">
+              <Label htmlFor="city" className="text-base">도시</Label>
+              <Select onValueChange={handleCityChange} value={formData.city}>
                 <SelectTrigger>
-                  <SelectValue placeholder="도시와 구/군을 선택하세요" />
+                  <SelectValue placeholder="도시를 선택하세요" />
                 </SelectTrigger>
                 <SelectContent>
-                  {locations.map((location) => (
-                    <SelectItem key={location.value} value={location.value}>
-                      {location.label}
+                  {cities.map((city) => (
+                    <SelectItem key={city} value={city}>
+                      {city}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="district" className="text-base">구/군</Label>
+              <Select 
+                onValueChange={handleDistrictChange} 
+                value={formData.district}
+                disabled={!formData.city}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="구/군을 선택하세요" />
+                </SelectTrigger>
+                <SelectContent>
+                  {districts.map((district) => (
+                    <SelectItem key={district} value={district}>
+                      {district}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -165,7 +193,7 @@ export default function SignUpPage() {
             </div>
           </div>
 
-          <div>
+          <div className="pt-4">
             <Button
               type="submit"
               className="w-full"
