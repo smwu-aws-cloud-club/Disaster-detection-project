@@ -2,17 +2,17 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Camera, AlertTriangle, User, LogOut, BarChart2 } from "lucide-react"
+import { Camera, AlertTriangle, User, LogOut } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import dynamic from "next/dynamic"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/components/ui/use-toast"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuTrigger,
+// } from "@/components/ui/dropdown-menu"
 
 interface Location {
   id: number
@@ -58,12 +58,12 @@ const MapWithNoSSR = dynamic(() => import('@/components/Map'), {
 })
 
 export default function DisasterDetectionPage() {
+  const router = useRouter()
+  const { toast } = useToast()
   const [selectedCamera, setSelectedCamera] = useState<Location | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [locations, setLocations] = useState<Location[]>([])
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null)
-  const router = useRouter()
-  const { toast } = useToast()
 
   const handleSelectCamera = (location: Location) => {
     setSelectedCamera(location)
@@ -109,20 +109,34 @@ export default function DisasterDetectionPage() {
     router.push("/")
   }
 
+  const handleDisasterSimulation = () => {
+    try {
+      router.push('/disaster-simulation')
+    } catch (error) {
+      console.error('Navigation error:', error)
+      // Fallback to window.location if router.push fails
+      window.location.href = '/disaster-simulation'
+    }
+  }
+
   return (
     <div className="min-h-screen w-full bg-gray-100 p-8">
       <div className="max-w-6xl mx-auto relative">
+        <div className="absolute z-[1000] top-4 left-4">
+          <Button
+            variant="destructive"
+            className="flex items-center gap-2"
+            // onClick={handleDisasterSimulation}
+            onClick={() => router.push('/disaster-simulation')}
+          >
+            {/* <AlertTriangle className="h-4 w-4" /> */}
+            재난 시뮬레이션
+          </Button>
+        </div>
+
         <div className="absolute top-4 right-4 z-[1000] flex gap-2">
           {isLoggedIn ? (
             <>
-              <Button
-                variant="outline"
-                className="flex items-center gap-2"
-                onClick={() => router.push('/disaster-simulation')}
-              >
-                <BarChart2 className="h-4 w-4" />
-                재난 현황
-              </Button>
               <Button 
                 variant="outline" 
                 className="flex items-center gap-2"
@@ -141,12 +155,21 @@ export default function DisasterDetectionPage() {
               </Button>
             </>
           ) : (
-            <Button 
-              className="font-semibold"
-              onClick={() => router.push('/signup')}
-            >
-              회원가입
-            </Button>
+            <>
+              <Button 
+                variant="outline"
+                className="flex items-center gap-2"
+                onClick={() => router.push('/login')}
+              >
+                로그인
+              </Button>
+              <Button 
+                className="font-semibold"
+                onClick={() => router.push('/signup')}
+              >
+                회원가입
+              </Button>
+            </>
           )}
         </div>
 

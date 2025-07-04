@@ -19,17 +19,10 @@ interface UserData {
   location: string
 }
 
-// Sample locations in Seoul
-const locations = [
-  { value: "강남구", label: "강남구" },
-  { value: "송파구", label: "송파구" },
-  { value: "서초구", label: "서초구" },
-  { value: "마포구", label: "마포구" },
-  { value: "용산구", label: "용산구" },
-  { value: "중구", label: "중구" },
-  { value: "종로구", label: "종로구" },
-  { value: "성동구", label: "성동구" },
-]
+interface LocationOption {
+  value: string
+  label: string
+}
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -39,6 +32,52 @@ export default function ProfilePage() {
   const [editedData, setEditedData] = useState<UserData | null>(null)
   const [open, setOpen] = useState(false)
   const [phoneError, setPhoneError] = useState("")
+  const [locations, setLocations] = useState<LocationOption[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const response = await fetch('/api/locations')
+        if (response.ok) {
+          const data = await response.json()
+          setLocations(data.map((item: any) => ({
+            value: item.label,
+            label: item.label
+          })))
+        } else {
+          // Fallback to basic locations if API fails
+          setLocations([
+            { value: "강남구", label: "강남구" },
+            { value: "송파구", label: "송파구" },
+            { value: "서초구", label: "서초구" },
+            { value: "마포구", label: "마포구" },
+            { value: "용산구", label: "용산구" },
+            { value: "중구", label: "중구" },
+            { value: "종로구", label: "종로구" },
+            { value: "성동구", label: "성동구" },
+          ])
+        }
+      } catch (error) {
+        console.error('Error fetching locations:', error)
+        // Fallback to basic locations
+        setLocations([
+          { value: "강남구", label: "강남구" },
+          { value: "송파구", label: "송파구" },
+          { value: "서초구", label: "서초구" },
+          { value: "마포구", label: "마포구" },
+          { value: "용산구", label: "용산구" },
+          { value: "중구", label: "중구" },
+          { value: "종로구", label: "종로구" },
+          { value: "성동구", label: "성동구" },
+        ])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchLocations()
+  }, [])
 
   useEffect(() => {
     const storedData = localStorage.getItem('userData')
@@ -77,7 +116,7 @@ export default function ProfilePage() {
     }
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!editedData) return
 
     if (!validatePhoneNumber(editedData.phoneNumber)) {
@@ -89,16 +128,52 @@ export default function ProfilePage() {
       return
     }
 
-    localStorage.setItem('userData', JSON.stringify(editedData))
-    setUserData(editedData)
-    setIsEditing(false)
-    toast({
-      title: "프로필 수정 완료",
-      description: "프로필이 성공적으로 수정되었습니다.",
-    })
+    try {
+      const response = await fetch('/api/members/me', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: editedData.username,
+          phoneNum: editedData.phoneNumber,
+          location: editedData.location
+        })
+      })
+
+      if (response.ok) {
+        localStorage.setItem('userData', JSON.stringify(editedData))
+        setUserData(editedData)
+        setIsEditing(false)
+        toast({
+          title: "프로필 수정 완료",
+          description: "프로필이 성공적으로 수정되었습니다.",
+        })
+      } else {
+        throw new Error('Failed to update profile')
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error)
+      toast({
+        title: "프로필 수정 실패",
+        description: "프로필 수정 중 오류가 발생했습니다.",
+        variant: "destructive",
+      })
+    }
   }
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+    } catch (error) {
+      console.error('Error during logout:', error)
+    }
+
     localStorage.removeItem('userData')
     toast({
       title: "로그아웃 완료",
@@ -107,8 +182,12 @@ export default function ProfilePage() {
     router.push('/')
   }
 
-  if (!userData || !editedData) {
-    return null
+  if (!userData || !editedData || loading) {
+    return (
+      <div className="min-h-screen w-full bg-gray-100 flex items-center justify-center p-8">
+        <div className="text-center">로딩 중...</div>
+      </div>
+    )
   }
 
   return (
@@ -217,17 +296,17 @@ export default function ProfilePage() {
                 <Button variant="outline" className="w-full" onClick={() => router.push('/')}>
                   홈으로
                 </Button>
-                <Button className="w-full" onClick={() => setIsEditing(true)}>
+                <Button variant="outline" className="w-full" onClick={() => setIsEditing(true)}>
                   <Edit2 className="mr-2 h-4 w-4" />
                   수정
-                </Button>
-                <Button variant="destructive" className="w-full" onClick={handleSignOut}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  로그아웃
                 </Button>
               </>
             )}
           </div>
+          <Button variant="destructive" className="w-full" onClick={handleSignOut}>
+            <LogOut className="mr-2 h-4 w-4" />
+            로그아웃
+          </Button>
         </CardContent>
       </Card>
     </div>

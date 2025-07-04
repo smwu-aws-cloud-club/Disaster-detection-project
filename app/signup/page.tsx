@@ -34,15 +34,15 @@ export default function SignUpPage() {
     
     if (formData.password !== formData.confirmPassword) {
       toast({
-        title: "비밀번호 확인 오류",
-        description: "비밀번호가 일치하지 않습니다",
+        title: "비밀번호 불일치",
+        description: "비밀번호가 일치하지 않습니다.",
         variant: "destructive",
       })
       return
     }
 
     try {
-      const response = await fetch("/api/members", {
+      const response = await fetch("/api/auth/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -51,24 +51,26 @@ export default function SignUpPage() {
           name: formData.name,
           phoneNum: formData.phoneNum,
           password: formData.password,
-          address: {
-            city: formData.city,
-            district: formData.district,
-          },
+          city: formData.city,
+          district: formData.district,
         }),
       })
 
       if (!response.ok) {
-        throw new Error("Failed to sign up")
+        throw new Error("Signup failed")
       }
 
+      const data = await response.json()
+      
+      // Store user data in localStorage
+      localStorage.setItem('userData', JSON.stringify(data))
+      
       toast({
         title: "회원가입 완료",
-        description: "로그인 페이지로 이동합니다",
-        duration: 3000,
+        description: "환영합니다!",
       })
       
-      router.push("/login")
+      router.push("/")
     } catch (error) {
       console.error("Error signing up:", error)
       toast({
@@ -198,7 +200,7 @@ export default function SignUpPage() {
               type="submit"
               className="w-full"
             >
-              Sign up
+              회원가입
             </Button>
           </div>
         </form>
